@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button,  TouchableOpacity,StyleSheet,SafeAreaView,Switch,Modal } from 'react-native';
 import { Formik } from 'formik';
-import * as Yup from 'yup';
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-
 import { validationSchema } from "./../utils/validation";
 import { styles } from "./../utils/styles";
-import { RadioButton } from 'react-native-paper';
 import axios from 'axios';
 import BASE_URL from './../utils/utils' 
 const URL = BASE_URL + "leads";

@@ -5,25 +5,9 @@ import { createMaterialBottomTabNavigator } from '@react-navigation/material-bot
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import card from './screens/card.js'
 import seller from './screens/InputScreen.js'
-function Feed() {
-<card></card>
-}
-
-function Profile() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Profile!</Text>
-    </View>
-  );
-}
-
-function Notifications() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Notifications!</Text>
-    </View>
-  );
-}
+import enquiries from './screens/Enquiries.js'
+import list from './screens/list.js'
+import itemDetail from './screens/itemDetail.js'
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -46,25 +30,47 @@ function MyTabs() {
         }}
       />
       <Tab.Screen
-        name="Notifications"
+        name="Sell"
         component={seller}
         options={{
-          tabBarLabel: 'Updates',
+          tabBarLabel: 'Sell',
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="bell" color={color} size={26} />
           ),
         }}
       />
       <Tab.Screen
-        name="Profile"
-        component={Profile}
+        name="List"
+        component={list}
         options={{
-          tabBarLabel: 'Profile',
+          tabBarLabel: 'list',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="account" color={color} size={26} />
+          ),
+        }}
+        />
+      <Tab.Screen
+        name="Enquiry List"
+        component={enquiries}
+        options={{
+          tabBarLabel: 'Enquiry List',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="account" color={color} size={26} />
+          ),
+        }}
+        
+      />
+      <Tab.Screen
+        name="Item Detail"
+        component={itemDetail}
+        options={{
+          tabBarLabel: 'Detail',
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="account" color={color} size={26} />
           ),
         }}
       />
+
     </Tab.Navigator>
   );
 }

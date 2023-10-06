@@ -1,29 +1,70 @@
-import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from 'react-native';
-
-const data = [
-  { id: '1', title: 'Card 1', image: require('./../assets/profile.jpg') },
-  { id: '2', title: 'Card 2', image: require('./../assets/profile.jpg') },
-  { id: '3', title: 'Card 3', image: require('./../assets/profile.jpg') },
-  { id: '4', title: 'Card 4', image: require('./../assets/profile.jpg') },
-  // Add more data items as needed
-];
-
+import React,  {useEffect, useState} from 'react';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet,SafeAreaView } from 'react-native';
+import axios from 'axios';
+import BASE_URL from '../utils/utils';
+import { StatusBar } from "expo-status-bar";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+// import { useNavigation } from '@react-navigation/native';
 const CardGrid = () => {
-  const renderCard = ({ item }) => (
-    <TouchableOpacity style={styles.card}>
-      <Image source={item.image} style={styles.cardImage} />
-      <Text style={styles.cardText}>{item.title}</Text>
-    </TouchableOpacity>
-  );
+
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState(data);
+  useEffect(() => {
+    console.log('reacteffect');
+
+    axios.get(BASE_URL+'seller/items').then((response) => {
+      setData(response.data);
+      console.log('response', response.data);
+    });
+  }, []);
+
+  const renderCard = ({ item }) => {
+  // function YourComponent({ item, navigation }) {
+    // const navigation = useNavigation();
+    const handleCardPress = () => {
+      console.log("handleCardPress")
+      // navigation.navigate('Detail', { item });
+    };
+  
+    return (
+      <TouchableOpacity style={styles.card} onPress={handleCardPress}>
+        <Image source={{ uri: item.image_urls[0] }} style={styles.cardImage} />
+        <Text style={styles.cardText}>{item.name}, {item.price}</Text>
+      </TouchableOpacity>
+    );
+  }
+  
+
+  // const renderCard = ({ item }) => (
+  //   <TouchableOpacity style={styles.card} onPress={handleCardPress}>
+  //     <Image source={{ uri: item.image_urls[0] }} style={styles.cardImage} />
+  //     <Text style={styles.cardText}>{item.name},{item.price}</Text>
+  //   </TouchableOpacity>
+  // );
 
   return (
+    <>
+
+
+    <StatusBar style="light" />
+
+    <SafeAreaView style={styles.container}>
+   
+    
+      <KeyboardAwareScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          >
     <FlatList
       data={data}
       renderItem={renderCard}
       keyExtractor={(item) => item.id}
       numColumns={2} // Adjust the number of columns as needed
     />
+     
+    </KeyboardAwareScrollView>
+    </SafeAreaView>
+    </>
   );
 };
 
