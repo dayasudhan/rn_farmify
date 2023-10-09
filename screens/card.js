@@ -24,7 +24,7 @@ const CardGrid = () => {
     const handleCardPress = () => {
       console.log("handleCardPress")
       // navigation.navigate('Detail', { item });
-    };
+          };
   
     return (
       <TouchableOpacity style={styles.card} onPress={handleCardPress}>
