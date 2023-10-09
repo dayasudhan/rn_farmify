@@ -4,11 +4,10 @@ import axios from 'axios';
 import BASE_URL from '../utils/utils';
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-// import { useNavigation } from '@react-navigation/native';
-const CardGrid = () => {
+
+const CardGrid = ({navigation}) => {
 
   const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState(data);
   useEffect(() => {
     console.log('reacteffect');
 
@@ -19,12 +18,11 @@ const CardGrid = () => {
   }, []);
 
   const renderCard = ({ item }) => {
-  // function YourComponent({ item, navigation }) {
-    // const navigation = useNavigation();
+
     const handleCardPress = () => {
       console.log("handleCardPress")
-      // navigation.navigate('Detail', { item });
-          };
+      navigation.navigate('itemDetail',{ data: item });
+    };
   
     return (
       <TouchableOpacity style={styles.card} onPress={handleCardPress}>
@@ -34,14 +32,6 @@ const CardGrid = () => {
     );
   }
   
-
-  // const renderCard = ({ item }) => (
-  //   <TouchableOpacity style={styles.card} onPress={handleCardPress}>
-  //     <Image source={{ uri: item.image_urls[0] }} style={styles.cardImage} />
-  //     <Text style={styles.cardText}>{item.name},{item.price}</Text>
-  //   </TouchableOpacity>
-  // );
-
   return (
     <>
 

@@ -8,7 +8,9 @@ import seller from './screens/InputScreen.js'
 import enquiries from './screens/Enquiries.js'
 import list from './screens/list.js'
 import itemDetail from './screens/itemDetail.js'
-
+import EnquiryInput from './screens/EnquiryInput.js'
+import { createStackNavigator } from '@react-navigation/stack';
+const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
 function MyTabs() {
@@ -77,8 +79,12 @@ function MyTabs() {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <MyTabs />
-          </NavigationContainer>
+     <NavigationContainer>
+     <Stack.Navigator initialRouteName="Tabs">
+       <Stack.Screen name="Tabs" component={MyTabs} />
+       <Stack.Screen name="itemDetail" component={itemDetail} /> 
+       <Stack.Screen name="enquiryInput" component={EnquiryInput} /> 
+     </Stack.Navigator>
+   </NavigationContainer>
   );
 }

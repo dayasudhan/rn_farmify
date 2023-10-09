@@ -22,7 +22,7 @@ const ImageGalleryWithIcons = ({ imageUrls }) => {
   return (
     <View style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {imageUrls.map((url, index) => (
+        {imageUrls && imageUrls.map((url, index) => (
           <View
             key={index}
             style={{

@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, Image, Text, StyleSheet ,TouchableOpacity} from 'react-native';
+import { View,  Text, StyleSheet ,TouchableOpacity,Modal} from 'react-native';
 
-import ImageGallery from './ImageGallery';
-import ImageGallery2 from './ImageGallery2';
+import ImageGallery from './ImageGallery2';
 const imageUrls = [
   'https://farmifyequipments.s3.amazonaws.com/thumbnail-665949102-1695639571579-.jpeg',
   'https://farmifyequipments.s3.amazonaws.com/thumbnail-457982009-1695640635314-.jpeg',
@@ -12,26 +11,33 @@ const imageUrls = [
   'https://farmifyequipments.s3.amazonaws.com/thumbnail-457982009-1695640635314-.jpeg',
 ];
 
-const MyImageComponent = () => {
+const MyImageComponent = ({ navigation,route }) => {
+  const receivedData = route.params.data; 
+  
+  console.log("receivedData",receivedData)
+
   function handleSubmit()
   {
-    
+    navigation.navigate('enquiryInput',{ data: receivedData.id });
   }
   return (
     <View style={styles.container}>
       
      
       <View style={styles.infoContainer}>
-      <Text style={styles.title}>Cultivator</Text>
-      <ImageGallery2 imageUrls={imageUrls}/>
+      <Text style={styles.title}>{receivedData.name}</Text>
+     
         
-        <Text style={styles.description}>Description : Image Description</Text>
-        <Text style={styles.description}>Manufacture Year: Image2 Description</Text>
-        <Text style={styles.description}>Price/Rate: Image3 Description</Text>
-        <Text style={styles.description}>Seller Details: Image4 Description</Text>
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>SUBMIT</Text>
+        <Text style={styles.description}>Description : {receivedData.description}</Text>
+        <Text style={styles.description}>Manufacture Year: {receivedData.makeYear}</Text>
+        <Text style={styles.description}>Price/Rate: {receivedData.price}</Text>
+        <Text style={styles.description}>Seller Details: {receivedData.address1},{ receivedData.city},{ receivedData.state}</Text>
+       
+           <ImageGallery imageUrls={receivedData.image_urls}/>
+           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Contact/Enquiry</Text>
           </TouchableOpacity>
+       
       </View>
     </View>
   );
@@ -61,6 +67,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 5,
     textAlign: 'center',
+  },
+  button: {
+    marginTop: 20,
+    backgroundColor: "#2980b9",
+    padding: 15,
+    borderRadius: 15,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 18,
+    textAlign: "center",
   },
 });
 
