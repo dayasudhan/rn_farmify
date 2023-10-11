@@ -1,7 +1,7 @@
 import React from 'react';
 import { View,  Text, StyleSheet ,TouchableOpacity,Modal} from 'react-native';
 
-import ImageGallery from './ImageGallery2';
+import ImageGallery from './ImageGallery';
 const imageUrls = [
   'https://farmifyequipments.s3.amazonaws.com/thumbnail-665949102-1695639571579-.jpeg',
   'https://farmifyequipments.s3.amazonaws.com/thumbnail-457982009-1695640635314-.jpeg',

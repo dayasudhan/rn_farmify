@@ -18,7 +18,7 @@ import BASE_URL from './../utils/utils';
 
 const URL = BASE_URL + 'seller/enquiry';
 
-const EnquiryInput = ({ route }) => {
+const EnquiryInput = ({ navigation,route }) => {
   const [showModal, setShowModal] = useState(false);
   const [responseText, setResponseText] = useState('');
 
@@ -46,6 +46,7 @@ const EnquiryInput = ({ route }) => {
 
   const closeModal = () => {
     setShowModal(false);
+    navigation.goBack();
   };
 
   return (

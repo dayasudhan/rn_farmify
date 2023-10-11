@@ -80,15 +80,12 @@ const InputScreen = () => {
               value={values.item_name}
             />
              <Text style={{ color: "red" }}>{errors.name}</Text>
-            {/* {touched.name && errors.name && <Text style={styles.error}>{errors.name}</Text>} */}
-          {/* </View> */}
-          {/* <View style={styles.formGroup}> */}
+
             <TextInput
                  style={styles.input}
                  value={values.item_year}
                  placeholder="Item Manufacture Year"
                  onChangeText={handleChange("item_year")}
-                //  onBlur={handleBlur("phone")}
                />
             <Text style={{ color: "red" }}>{errors.item_year}</Text>
              <TextInput
@@ -96,7 +93,6 @@ const InputScreen = () => {
                   value={values.item_price}
                   placeholder="Item Rate/Price.."
                   onChangeText={handleChange("item_price")}
-                  // onBlur={handleBlur("email")}
                   autoCapitalize="none"
                 />
                  <Text style={{ color: "red" }}>{errors.item_price}</Text>
@@ -163,7 +159,6 @@ const InputScreen = () => {
           
         )}
       </Formik>
-       {/* <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}> */}
       <Modal   animationType="slide"
         transparent={false}
         visible={showModal}

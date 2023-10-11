@@ -81,7 +81,7 @@ export default function App() {
   return (
      <NavigationContainer>
      <Stack.Navigator initialRouteName="Tabs">
-       <Stack.Screen name="Tabs" component={MyTabs} />
+       <Stack.Screen name="Farmify" component={MyTabs} />
        <Stack.Screen name="itemDetail" component={itemDetail} /> 
        <Stack.Screen name="enquiryInput" component={EnquiryInput} /> 
      </Stack.Navigator>
