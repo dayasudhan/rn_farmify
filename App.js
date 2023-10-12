@@ -6,7 +6,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import card from './screens/card.js'
 import seller from './screens/InputScreen.js'
 import enquiries from './screens/Enquiries.js'
-import list from './screens/list.js'
+import ImagePicker from './screens/ImagePicker.js'
 import itemDetail from './screens/itemDetail.js'
 import EnquiryInput from './screens/EnquiryInput.js'
 import { createStackNavigator } from '@react-navigation/stack';
@@ -42,10 +42,10 @@ function MyTabs() {
         }}
       />
       <Tab.Screen
-        name="List"
-        component={list}
+        name="ImagePicker"
+        component={ImagePicker}
         options={{
-          tabBarLabel: 'list',
+          tabBarLabel: 'ImagePicker',
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="account" color={color} size={26} />
           ),
