@@ -7,7 +7,7 @@ import { validationSchema } from "./../utils/validation";
 import { styles } from "./../utils/styles";
 import axios from 'axios';
 import BASE_URL from './../utils/utils' 
-const URL = BASE_URL + "leads";
+const URL = BASE_URL + "upload_mobile";
 
 
 const InputScreen = () => {
@@ -106,7 +106,7 @@ const InputScreen = () => {
                 />
                  <Text style={{ color: "red" }}>{errors.description}</Text>
                 
-<View style={styles.formGroup}>
+              <View style={styles.formGroup}>
                 <Text style={styles.label}>Seller Details</Text>
 
                 <TextInput

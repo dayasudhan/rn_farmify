@@ -84,9 +84,9 @@ const App = () => {
   const [multiSelect, setMultiSelect] = useState(false);
   const [data, setData] = useState([]);
   useEffect(() => {
-        axios.get(BASE_URL + 'seller/enquiries')
+        axios.get(BASE_URL + 'enquiriesall')
         .then(response => {
-            if(response.status != 401)
+            if(response.status != 403)
             {
             setData(response.data);
             setListDataSource(response.data);

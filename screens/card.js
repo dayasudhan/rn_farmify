@@ -11,7 +11,7 @@ const CardGrid = ({navigation}) => {
   useEffect(() => {
     console.log('reacteffect');
 
-    axios.get(BASE_URL+'seller/items').then((response) => {
+    axios.get(BASE_URL+'items').then((response) => {
       setData(response.data);
       console.log('response', response.data);
     });
