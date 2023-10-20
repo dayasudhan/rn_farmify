@@ -16,7 +16,7 @@ import { styles } from './../utils/styles';
 import axios from 'axios';
 import BASE_URL from './../utils/utils';
 
-const URL = BASE_URL + 'seller/enquiry';
+const URL = BASE_URL + 'enquiry';
 
 const EnquiryInput = ({ navigation,route }) => {
   const [showModal, setShowModal] = useState(false);

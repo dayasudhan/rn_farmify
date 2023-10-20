@@ -7,14 +7,12 @@ import { validationSchema } from "./../utils/validation";
 import { styles } from "./../utils/styles";
 import axios from 'axios';
 import BASE_URL from './../utils/utils' 
-const URL = BASE_URL + "leads";
+const URL = BASE_URL + "upload_mobile";
 
 
 const InputScreen = () => {
   const [showModal, setShowModal] = useState(false);
   const [responseText, setResponseText] = useState('');
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
   const onSubmitHandler = (values) => {
     console.log('Login form values:', values);
@@ -24,8 +22,8 @@ const InputScreen = () => {
       console.log("response2",response?.data?.id);
       setTimeout(() => {
         setResponseText(`Customer Inserted Successfully With Id : ${response?.data?.id}`); // Set the response text to be shown in the modal
-        setShowModal(true); // Show the modal
-      }, 1000); // Delay of 1 second
+        setShowModal(true); 
+      }, 1000); 
     })
     .catch(error => {
       console.error("error",error);
@@ -66,7 +64,7 @@ const InputScreen = () => {
         validationSchema={validationSchema}
         onSubmit={(values) => onSubmitHandler(values)}
       >
-        {({ handleChange, handleSubmit,handleBlur, values, errors, touched }) => (
+        {({ handleChange, handleSubmit,handleBlur, values, errors }) => (
           <KeyboardAwareScrollView
           style={styles.content}
           showsVerticalScrollIndicator={false}
