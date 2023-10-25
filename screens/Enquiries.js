@@ -11,15 +11,18 @@ import {
   UIManager,
   TouchableOpacity,
   Platform,
-  Image
+  Image,
+  TextInput
 } from 'react-native';
 import axios from 'axios';
 import BASE_URL from '../utils/utils';
+import Modal from 'react-native-modal'; // Import the modal component
 const ExpandableComponent = ({item, onClickFunction}) => {
   //Custom Component for the Expandable List
   const [layoutHeight, setLayoutHeight] = useState(0);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState(data);
+
   useEffect(() => {
     if (item.isExpanded) {
       setLayoutHeight(null);
@@ -83,28 +86,86 @@ const App = () => {
   const [listDataSource, setListDataSource] = useState([]);
   const [multiSelect, setMultiSelect] = useState(false);
   const [data, setData] = useState([]);
-  useEffect(() => {
-        axios.get(BASE_URL + 'enquiriesall')
-        .then(response => {
-            if(response.status != 403)
-            {
-            setData(response.data);
-            setListDataSource(response.data);
-            }
-            else
-            {
-            setData(null);
-            setListDataSource(null);
-            }
-            console.log(response);
-        })
-        .catch(error => {
-            console.log(error);
-        });
-    },[]);
+  const [isLoginModalVisible, setLoginModalVisible] = useState(false);
+  const [isLoginggeIn, setLoginggeIn] = useState(false);
+  const [username, setUsername] = useState(''); // State for username input
+  const [password, setPassword] = useState(''); // State for password input
+
   if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
+  const getEnquiries = async () =>
+  {
+   await axios.get(BASE_URL + 'enquiries')
+    .then(response => {
+        if(response.status != 403)
+        {
+          console.log("! 403")
+        setData(response.data);
+        setListDataSource(response.data);
+        }
+        else
+        {
+          console.log("else 403")
+        setData(null);
+        setListDataSource(null);
+        setLoginModalVisible(true);
+        }
+        console.log(response);
+    })
+    .catch(error => {
+      console.log("else error 403")
+      setLoginModalVisible(true);
+      console.log(error);
+    });
+  }
+  useEffect(() => {
+    getEnquiries();
+    },[]);
+  const handleLoginSubmit = async () => {
+    try {
+      const loginData = { 'username': username, 'password': password }
+      await axios.post(BASE_URL + 'login', loginData).then(response => {
+       
+        setTimeout(() => {
+          console.log("loggedin successfully",response)
+          setLoginggeIn(true);
+          getEnquiries();
+        }, 1000);   
+      })
+      .catch(error => {
+        console.error("error",error);
+        // alert("Not auntheticated")
+      });
+    } catch (error) {
+      console.error("error",error);
+      // alert("Not auntheticated")
+    }
+    setLoginModalVisible(false);
+  };
+  
+  const handleLogoutSubmit = async () => {
+    console.log("handleLogoutSubmit")
+      try {
+        await axios.get(BASE_URL + 'logout').then(response => {
+        
+          setTimeout(() => {
+            console.log("logged out successfully",response)
+            setLoginggeIn(false);
+            setLoginModalVisible(true);
+            setData(null);
+            setListDataSource(null);
+          }, 1000);   
+        })
+        .catch(error => {
+          console.error("error",error);
+          // alert("Not auntheticated")
+        });
+      } catch (error) {
+        console.error("error",error);
+        // alert("Not auntheticated")
+      }
+  };
 
   const updateLayout = (index) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -130,15 +191,15 @@ const App = () => {
         <View style={{flexDirection: 'row', padding: 10}}>
           <Text style={styles.titleText}>Enquiry List</Text>
           <TouchableOpacity
-            onPress={() => setMultiSelect(!multiSelect)}>
+            onPress={() => handleLogoutSubmit()}>
             <Text
               style={{
                 textAlign: 'center',
                 justifyContent: 'center',
               }}>
-              {multiSelect
-                ? 'Enable Single \n Expand'
-                : 'Enalble Multiple \n Expand'}
+              {isLoginggeIn
+                ? 'LogOut'
+                : 'Dealer LogIn'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -154,6 +215,38 @@ const App = () => {
           ))}
         </ScrollView>
       </View>
+       {/* Login Modal */}
+       <Modal isVisible={isLoginModalVisible}>
+        <View style={styles.loginModalContainer}>
+          <Text style={styles.loginModalTitle}>Dealer Login</Text>
+          <TextInput
+            style={styles.loginModalInput}
+            placeholder="Username"
+            value={username}
+            onChangeText={setUsername}
+          />
+          <TextInput
+            style={styles.loginModalInput}
+            placeholder="Password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            style={styles.loginModalButton}
+            onPress={handleLoginSubmit}
+          >
+            <Text style={styles.loginModalButtonText}>Login</Text>
+          </TouchableOpacity>
+            {/* Close button */}
+    <TouchableOpacity
+      style={styles.closeButton}
+      onPress={() => {setLoginModalVisible(false)}}
+    >
+      <Text style={styles.closeButtonText}>Close</Text>
+    </TouchableOpacity>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -197,6 +290,41 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     marginRight: 10,
+  },
+  loginModalContainer: {
+    backgroundColor: 'white',
+    padding: 16,
+  },
+  loginModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  loginModalInput: {
+    borderBottomWidth: 1,
+    borderColor: 'gray',
+    marginBottom: 16,
+  },
+  loginModalButton: {
+    backgroundColor: 'blue',
+    padding: 12,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  loginModalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    backgroundColor: 'red', // You can choose the desired background color
+    padding: 12,
+    alignItems: 'center',
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 
