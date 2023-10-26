@@ -1,29 +1,27 @@
-import React,  {useEffect, useState} from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet,SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, SafeAreaView } from 'react-native';
 import axios from 'axios';
 import BASE_URL from '../utils/utils';
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
-const CardGrid = ({navigation}) => {
-
+const CardGrid = ({ navigation }) => {
   const [data, setData] = useState([]);
+
   useEffect(() => {
     console.log('reacteffect');
 
-    axios.get(BASE_URL+'items').then((response) => {
+    axios.get(BASE_URL + 'items').then((response) => {
       setData(response.data);
       console.log('response', response.data);
     });
   }, []);
 
   const renderCard = ({ item }) => {
-
     const handleCardPress = () => {
       console.log("handleCardPress")
-      navigation.navigate('itemDetail',{ data: item });
+      navigation.navigate('itemDetail', { data: item });
     };
-  
+
     return (
       <TouchableOpacity style={styles.card} onPress={handleCardPress}>
         <Image source={{ uri: item.image_urls[0] }} style={styles.cardImage} />
@@ -31,29 +29,19 @@ const CardGrid = ({navigation}) => {
       </TouchableOpacity>
     );
   }
-  
+
   return (
     <>
+      <StatusBar style="light" />
 
-
-    <StatusBar style="light" />
-
-    <SafeAreaView style={styles.container}>
-   
-    
-      <KeyboardAwareScrollView
-          style={styles.content}
-          showsVerticalScrollIndicator={false}
-          >
-    <FlatList
-      data={data}
-      renderItem={renderCard}
-      keyExtractor={(item) => item.id}
-      numColumns={2} // Adjust the number of columns as needed
-    />
-     
-    </KeyboardAwareScrollView>
-    </SafeAreaView>
+      <SafeAreaView style={styles.container}>
+        <FlatList
+          data={data}
+          renderItem={renderCard}
+          keyExtractor={(item) => item.id}
+          numColumns={2} // Adjust the number of columns as needed
+        />
+      </SafeAreaView>
     </>
   );
 };
