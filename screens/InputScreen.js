@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button,  TouchableOpacity,StyleSheet,SafeAreaView,Switch,Modal } from 'react-native';
+import { View, Text, TextInput, Button,  TouchableOpacity,StyleSheet,SafeAreaView,Switch,Modal,Image ,FlatList} from 'react-native';
 import { Formik } from 'formik';
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -7,7 +7,8 @@ import { validationSchema } from "./../utils/validation";
 import { styles } from "./../utils/styles";
 import axios from 'axios';
 import BASE_URL from './../utils/utils' 
-const URL = BASE_URL + "upload_mobile";
+import * as ImagePicker from 'expo-image-picker';
+const URL = BASE_URL + "upload";
 
 
 const InputScreen = () => {
@@ -15,11 +16,35 @@ const InputScreen = () => {
   const [responseText, setResponseText] = useState('');
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
-
+  const [images, setImages] = useState([]);
+ 
   const onSubmitHandler = (values) => {
-    console.log('Login form values:', values);
-    axios.post(URL, values)
-    .then(response => {
+    if (images.length === 0) {
+      Alert.alert('No images selected', 'Please select one or more images to upload.');
+      return;
+    }
+    const formData = new FormData();
+
+    images.forEach((image, index) => {
+      formData.append(`images`, {
+        uri: image,
+        type: 'image/jpeg',
+        name: `image${index}.jpg`,
+      });
+    });
+
+    for (const key in values) {
+      if (values.hasOwnProperty(key)) {
+        const value = values[key];
+        formData.append(key, value);
+      }
+    }
+    console.log('Login form values:', values,formData);
+    axios.post(URL, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }).then(response => {
       console.log("response1",response);
       console.log("response2",response?.data?.id);
       setTimeout(() => {
@@ -38,8 +63,22 @@ const InputScreen = () => {
   const openModal = () => {
     setShowModal(true);
   };
-  const [propertyType, setPropertyType] = useState('Commercial');
-  const [serviceFrequency, setServiceFrequency] = useState('Monthly');
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1
+    });
+
+    console.log("result",result);
+
+    if (!result.canceled) {
+      setImages((prevImages) => [...prevImages, result.assets[0].uri]);
+    }
+  };
+
   return (
     <>
     <SafeAreaView style={styles.topSafeArea} />
@@ -151,6 +190,14 @@ const InputScreen = () => {
                 />
 
               <Text style={{ color: "red" }}>{errors.address}</Text>
+              <Button title="Pick images from the gallery" onPress={pickImage} />
+              <FlatList
+              data= {images}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <Image source={{ uri: item }} style={{ width: 200, height: 200 }} />
+              )}
+            />
              
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
             <Text style={styles.buttonText}>SUBMIT</Text>
