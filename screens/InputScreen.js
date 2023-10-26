@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button,  TouchableOpacity,StyleSheet,SafeAreaView,Switch,Modal,Image ,FlatList} from 'react-native';
+import React, { useState,useEffect } from 'react';
+import { View, Text, TextInput, Button,  
+  TouchableOpacity,StyleSheet,SafeAreaView,Switch,Modal,Image ,FlatList} from 'react-native';
 import { Formik } from 'formik';
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -8,8 +9,9 @@ import { styles } from "./../utils/styles";
 import axios from 'axios';
 import BASE_URL from './../utils/utils' 
 import * as ImagePicker from 'expo-image-picker';
+import { Picker } from '@react-native-picker/picker';
 const URL = BASE_URL + "upload";
-
+const INITURL = BASE_URL + "states";
 
 const InputScreen = () => {
   const [showModal, setShowModal] = useState(false);
@@ -17,7 +19,23 @@ const InputScreen = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
   const [images, setImages] = useState([]);
- 
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+
+  useEffect(() => {
+    // Fetch states and districts from the backend API here
+    // Replace the following with your actual API endpoint
+    axios.get(INITURL)
+      .then((response) => {
+        console.log("inside states",response)
+        setStates(response.data?.states); // Assuming the API response is an array of state options
+        setDistricts(response.data?.districts);
+      })
+      .catch((error) => {
+        console.error('Error fetching states:', error);
+      });
+  }, []);
+
   const onSubmitHandler = (values) => {
     if (images.length === 0) {
       Alert.alert('No images selected', 'Please select one or more images to upload.');
@@ -79,6 +97,11 @@ const InputScreen = () => {
     }
   };
 
+  const deleteImage = (index) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
+  };
   return (
     <>
     <SafeAreaView style={styles.topSafeArea} />
@@ -100,7 +123,9 @@ const InputScreen = () => {
           item_price:"25000",
           item_place:"",
           description:"Sample description",
-          image:""
+          image:"",
+          state:"",
+          district:""
         }}
         validationSchema={validationSchema}
         onSubmit={(values) => onSubmitHandler(values)}
@@ -188,15 +213,39 @@ const InputScreen = () => {
                   multiline={true} // Set to true for multiline input
                   numberOfLines={4} // Specify the number of lines to display (optional)
                 />
-
-              <Text style={{ color: "red" }}>{errors.address}</Text>
-              <Button title="Pick images from the gallery" onPress={pickImage} />
-              <FlatList
-              data= {images}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <Image source={{ uri: item }} style={{ width: 200, height: 200 }} />
-              )}
+              <Text>Select State</Text>
+                    <Picker
+                      selectedValue={values.state}
+                      onValueChange={handleChange("state")}
+                    >                    
+                    {states.length>0 && states.map((state) => (
+                      <Picker.Item key={state} label={state} value={state} />
+                    ))}
+                    </Picker>
+                <Text>Select District</Text>
+                    <Picker
+                      selectedValue={values.district}
+                      onValueChange={handleChange("district")}
+                    >                    
+                    {districts[values.state] &&  districts[values.state].length > 0 &&  districts[values.state].map((district) => (
+                      <Picker.Item key={district} label={district} value={district} />
+                    ))}
+                    </Picker>
+                      <Text style={{ color: "red" }}>{errors.address}</Text>
+                      <Button title="Pick images from the gallery" onPress={pickImage} />
+                      <FlatList
+                      data= {images}
+                      keyExtractor={(item) => item}
+                      // numColumns={2}
+                      renderItem={({ item, index }) => (
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Image source={{ uri: item }} style={{ width: 100, height: 100 }} />
+                          <TouchableOpacity onPress={() => deleteImage(index)}>
+                            <Text style={{ color: 'red', marginLeft: 10 }}>Delete</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+              
             />
              
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
