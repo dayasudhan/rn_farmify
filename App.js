@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -41,26 +40,16 @@ function MyTabs() {
         }}
       />
       <Tab.Screen
-        name="Enquiry List"
+        name="Enquiries"
         component={enquiries}
         options={{
-          tabBarLabel: 'Enquiry List',
+          tabBarLabel: 'Enquiries',
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="account" color={color} size={26} />
           ),
         }}
         
       />
-      {/* <Tab.Screen
-        name="Item Detail"
-        component={itemDetail}
-        options={{
-          tabBarLabel: 'Detail',
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="account" color={color} size={26} />
-          ),
-        }}
-      /> */}
 
     </Tab.Navigator>
   );
