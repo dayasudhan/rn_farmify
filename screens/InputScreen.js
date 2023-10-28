@@ -37,8 +37,9 @@ const InputScreen = () => {
   }, []);
 
   const onSubmitHandler = (values) => {
+    console.log("onSubmitHandler");
     if (images.length === 0) {
-      Alert.alert('No images selected', 'Please select one or more images to upload.');
+      alert('No images selected , Please select one or more images to upload.');
       return;
     }
     const formData = new FormData();
@@ -111,18 +112,34 @@ const InputScreen = () => {
     <SafeAreaView style={styles.container}>
 
       <Formik
+        // initialValues={{
+        //   name: "D",
+        //   phone: "956629075",
+        //   address: "Kuruva,Honnali,Davangere,Karnataka",
+        //   email: "dayasudhankg@gmail.com",
+        //   landMark:"",
+        //   city:"Shimoga",
+        //   item_name:"",
+        //   item_year:"2020",
+        //   item_price:"25000",
+        //   item_place:"",
+        //   description:"Sample description",
+        //   image:"",
+        //   state:"",
+        //   district:""
+        // }}
         initialValues={{
-          name: "Devraj",
-          phone: "956629075",
-          address: "Kuruva,Honnali,Davangere,Karnataka",
-          email: "dayasudhankg@gmail.com",
+          name: "",
+          phone: "",
+          address: "",
+          email: "",
           landMark:"",
-          city:"Shimoga",
+          city:"",
           item_name:"",
-          item_year:"2020",
-          item_price:"25000",
+          item_year:"",
+          item_price:"",
           item_place:"",
-          description:"Sample description",
+          description:"",
           image:"",
           state:"",
           district:""
@@ -143,7 +160,7 @@ const InputScreen = () => {
               onChangeText={handleChange('item_name')}
               value={values.item_name}
             />
-             <Text style={{ color: "red" }}>{errors.name}</Text>
+             <Text style={{ color: "red" }}>{errors.item_name}</Text>
 
             <TextInput
                  style={styles.input}
@@ -213,6 +230,7 @@ const InputScreen = () => {
                   multiline={true} // Set to true for multiline input
                   numberOfLines={4} // Specify the number of lines to display (optional)
                 />
+                <Text style={{ color: "red" }}>{errors.address}</Text>
               <Text>Select State</Text>
                     <Picker
                       selectedValue={values.state}
@@ -231,7 +249,7 @@ const InputScreen = () => {
                       <Picker.Item key={district} label={district} value={district} />
                     ))}
                     </Picker>
-                      <Text style={{ color: "red" }}>{errors.address}</Text>
+                     
                       <Button title="Pick images from the gallery" onPress={pickImage} />
                       <FlatList
                       data= {images}
@@ -245,7 +263,6 @@ const InputScreen = () => {
                           </TouchableOpacity>
                         </View>
                       )}
-              
             />
              
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
