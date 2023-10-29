@@ -6,57 +6,82 @@ import { StatusBar } from "expo-status-bar";
 
 const CardGrid = ({ navigation }) => {
   const [data, setData] = useState([]);
-  const [searchText, setSearchText] = useState(''); // State for search input
+  const [searchText, setSearchText] = useState('');
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [allDataFetched, setAllDataFetched] = useState(false);
+  const [pageSize] = useState(10);
 
   useEffect(() => {
-    console.log('reacteffect');
-
-    axios.get(BASE_URL + 'items').then((response) => {
-      setData(response.data);
-      console.log('response', response.data);
-    });
+    fetchData();
   }, []);
 
-  const renderCard = ({ item }) => {
-    const handleCardPress = () => {
-      console.log("handleCardPress")
-      navigation.navigate('itemDetail', { data: item });
-    };
+  const fetchData = async () => {
+    if (loading || allDataFetched) return;
 
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${BASE_URL}items_by_page?page=${page}&pageSize=${pageSize}`
+      );
+
+      if (response.data.length > 0) {
+        setData((prevData) => [...prevData, ...response.data]);
+        setPage(page + 1);
+      } else {
+        setAllDataFetched(true);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderItem = ({ item }) => {
+    // Example of a memoized component
+    const MemoizedCard = React.memo(({ item }) => {
+      const handleCardPress = () => {
+        navigation.navigate('itemDetail', { data: item });
+      };
+
+      return (
+        <TouchableOpacity style={styles.card} onPress={handleCardPress}>
+          <Image source={{ uri: item.image_urls[0] }} style={styles.cardImage} />
+          <Text style={styles.cardText}>{item.name}, {item.price}</Text>
+        </TouchableOpacity>
+      );
+    });
+
+    return <MemoizedCard item={item} />;
+  };
+
+  const filteredData = data.filter((item) => {
     return (
-      <TouchableOpacity style={styles.card} onPress={handleCardPress}>
-        <Image source={{ uri: item.image_urls[0] }} style={styles.cardImage} />
-        <Text style={styles.cardText}>{item.name}, {item.price}</Text>
-      </TouchableOpacity>
+      item?.['name']?.toLowerCase().includes(searchText.toLowerCase()) ||
+      item?.['description']?.toLowerCase().includes(searchText.toLowerCase()) ||
+      item?.['address']?.toLowerCase().includes(searchText.toLowerCase()) ||
+      item?.['city']?.toLowerCase().includes(searchText.toLowerCase())
     );
-  }
-
-  // Filter data based on search input
-  const filteredData = data.filter(item => {
-    return (item?.['name']?.toLowerCase().includes(searchText.toLowerCase()) ||
-    item?.['description']?.toLowerCase().includes(searchText.toLowerCase())||  
-    item?.['address']?.toLowerCase().includes(searchText.toLowerCase())|| 
-    item?.['city']?.toLowerCase().includes(searchText.toLowerCase()))
   });
 
   return (
     <>
       <StatusBar style="light" />
-
       <SafeAreaView style={styles.container}>
-        {/* Add a text input for searching */}
         <TextInput
           style={styles.searchInput}
           placeholder="Search..."
           value={searchText}
-          onChangeText={text => setSearchText(text)}
+          onChangeText={(text) => setSearchText(text)}
         />
-
         <FlatList
-          data={filteredData} // Display filtered items
-          renderItem={renderCard}
+          data={filteredData}
+          renderItem={renderItem}
           keyExtractor={(item) => item.id}
           numColumns={2}
+          onEndReached={fetchData}
+          onEndReachedThreshold={0.1}
         />
       </SafeAreaView>
     </>
