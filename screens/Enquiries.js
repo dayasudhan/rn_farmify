@@ -12,7 +12,10 @@ import {
   TouchableOpacity,
   Platform,
   Image,
-  TextInput
+  TextInput,
+  Linking,
+  Button
+
 } from 'react-native';
 import axios from 'axios';
 import BASE_URL from '../utils/utils';
@@ -33,7 +36,16 @@ const ExpandableComponent = ({item, onClickFunction}) => {
     
     
   }, [item.isExpanded]);
-
+  const handleCallPress = (phone) => {
+  
+    Linking.openURL(`tel:${phone}`)
+      .then((supported) => {
+        if (!supported) {
+          Alert.alert('Phone call is not available on this device');
+        }
+      })
+      .catch((err) => console.error('An error occurred', err));
+  };
   return (
     <View>
         <KeyboardAwareScrollView
@@ -52,7 +64,7 @@ const ExpandableComponent = ({item, onClickFunction}) => {
       style={styles.itemImage}
     />
         <Text style={styles.headerText}>
-      {item.item.name},{item.item.price}, {item.item.phone}
+      {item.item.name},{item.item.price},{item.item.address}
     </Text>
   </View>
 </TouchableOpacity>
@@ -61,20 +73,17 @@ const ExpandableComponent = ({item, onClickFunction}) => {
           height: layoutHeight,
           overflow: 'hidden',
         }}>
-
-          <TouchableOpacity
-            key={item.item.id}
-            style={styles.content}
-            onPress={
-              () => alert('Name ' + item.name + 'Address ' + item.address + ' Phone: ' + item.phone)
-          }>
-             
+          
             <Text style={styles.text}>
-              {item.name}, {item.address1},{item.city},{item.phone}
+              {item.name}, {item.address},{item.city},{item.phone}
             </Text>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Button title="Call Seller" onPress={() => handleCallPress(item.item.phone)} />
+              <Button title="Call Buyer" onPress={() => handleCallPress(item.phone)} />
+          </View>
             <View style={styles.separator} />
-          </TouchableOpacity>
-        {/* ))} */}
+
       </View>
       </KeyboardAwareScrollView>
     </View>
@@ -129,18 +138,22 @@ const App = () => {
         setTimeout(() => {
           console.log("loggedin successfully",response)
           setLoginggeIn(true);
+          setLoginModalVisible(false);
           getEnquiries();
+
         }, 1000);   
       })
       .catch(error => {
         console.error("error",error);
+        setLoginggeIn(false);
         // alert("Not auntheticated")
       });
     } catch (error) {
       console.error("error",error);
       // alert("Not auntheticated")
+      setLoginggeIn(false);
     }
-    setLoginModalVisible(false);
+    
   };
   
   const handleLogoutSubmit = async () => {

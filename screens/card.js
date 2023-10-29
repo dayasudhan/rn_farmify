@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, TextInput, StyleSheet, SafeAreaView } from 'react-native';
 import axios from 'axios';
 import BASE_URL from '../utils/utils';
 import { StatusBar } from "expo-status-bar";
 
 const CardGrid = ({ navigation }) => {
   const [data, setData] = useState([]);
+  const [searchText, setSearchText] = useState(''); // State for search input
 
   useEffect(() => {
     console.log('reacteffect');
@@ -30,16 +31,32 @@ const CardGrid = ({ navigation }) => {
     );
   }
 
+  // Filter data based on search input
+  const filteredData = data.filter(item => {
+    return (item?.['name']?.toLowerCase().includes(searchText.toLowerCase()) ||
+    item?.['description']?.toLowerCase().includes(searchText.toLowerCase())||  
+    item?.['address']?.toLowerCase().includes(searchText.toLowerCase())|| 
+    item?.['city']?.toLowerCase().includes(searchText.toLowerCase()))
+  });
+
   return (
     <>
       <StatusBar style="light" />
 
       <SafeAreaView style={styles.container}>
+        {/* Add a text input for searching */}
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search..."
+          value={searchText}
+          onChangeText={text => setSearchText(text)}
+        />
+
         <FlatList
-          data={data}
+          data={filteredData} // Display filtered items
           renderItem={renderCard}
           keyExtractor={(item) => item.id}
-          numColumns={2} // Adjust the number of columns as needed
+          numColumns={2}
         />
       </SafeAreaView>
     </>
@@ -47,6 +64,9 @@ const CardGrid = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   card: {
     flex: 1,
     backgroundColor: 'white',
@@ -63,11 +83,19 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     width: 120,
-    height: 120, // Adjust the size of the image as needed
+    height: 120,
     marginBottom: 1,
   },
   cardText: {
     fontSize: 18,
+  },
+  searchInput: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    margin: 10,
+    padding: 10,
+    borderRadius: 5,
   },
 });
 
