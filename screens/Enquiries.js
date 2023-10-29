@@ -61,13 +61,12 @@ const ExpandableComponent = ({item, onClickFunction}) => {
           height: layoutHeight,
           overflow: 'hidden',
         }}>
-        {/*Content under the header of the Expandable List Item*/}
-        {/* {item.item.map((item, key) => ( */}
+
           <TouchableOpacity
             key={item.item.id}
             style={styles.content}
             onPress={
-              () => alert('Id: ' + item.item.name + ' val: ' + item.item.phone)
+              () => alert('Name ' + item.name + 'Address ' + item.address + ' Phone: ' + item.phone)
           }>
              
             <Text style={styles.text}>

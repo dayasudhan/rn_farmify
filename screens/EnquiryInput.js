@@ -58,9 +58,9 @@ const EnquiryInput = ({ navigation,route }) => {
       <SafeAreaView style={styles.container}>
         <Formik
           initialValues={{
-            name: 'Devraj',
-            phone: '956629075',
-            address: 'Kuruva, Honnali, Davangere, Karnataka',
+            name: '',
+            phone: '',
+            address: '',
           }}
         
           onSubmit={(values) => {

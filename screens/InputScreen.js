@@ -38,7 +38,7 @@ const InputScreen = () => {
 
   const onSubmitHandler = (values) => {
     if (images.length === 0) {
-      Alert.alert('No images selected', 'Please select one or more images to upload.');
+      alert('No images selected , Please select one or more images to upload.');
       return;
     }
     const formData = new FormData();
@@ -143,7 +143,7 @@ const InputScreen = () => {
               onChangeText={handleChange('item_name')}
               value={values.item_name}
             />
-             <Text style={{ color: "red" }}>{errors.name}</Text>
+             <Text style={{ color: "red" }}>{errors.item_name}</Text>
 
             <TextInput
                  style={styles.input}
@@ -213,6 +213,7 @@ const InputScreen = () => {
                   multiline={true} // Set to true for multiline input
                   numberOfLines={4} // Specify the number of lines to display (optional)
                 />
+                <Text style={{ color: "red" }}>{errors.address}</Text>
               <Text>Select State</Text>
                     <Picker
                       selectedValue={values.state}
@@ -231,7 +232,7 @@ const InputScreen = () => {
                       <Picker.Item key={district} label={district} value={district} />
                     ))}
                     </Picker>
-                      <Text style={{ color: "red" }}>{errors.address}</Text>
+                     
                       <Button title="Pick images from the gallery" onPress={pickImage} />
                       <FlatList
                       data= {images}
