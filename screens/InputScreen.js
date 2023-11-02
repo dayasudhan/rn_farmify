@@ -10,30 +10,98 @@ import axios from 'axios';
 import BASE_URL from './../utils/utils' 
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
+import * as Location from 'expo-location';
 const URL = BASE_URL + "upload";
 const INITURL = BASE_URL + "states";
 
 const InputScreen = () => {
   const [showModal, setShowModal] = useState(false);
   const [responseText, setResponseText] = useState('');
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
   const [images, setImages] = useState([]);
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
 
+  const [geoResult,setGeoResult]=useState(null);
+
+  function rearrangeArray(items, firstitem) {
+    if (!items.includes(firstitem)) {
+      return items;
+    }
+    const remainingitems = items.filter(item => item !== firstitem);
+    const rearrangeditems = [firstitem, ...remainingitems];
+    console.log("rearrangeArray",rearrangeditems)
+    return rearrangeditems;
+  }
   useEffect(() => {
-    // Fetch states and districts from the backend API here
-    // Replace the following with your actual API endpoint
-    axios.get(INITURL)
-      .then((response) => {
-        console.log("inside states",response)
-        setStates(response.data?.states); // Assuming the API response is an array of state options
-        setDistricts(response.data?.districts);
-      })
-      .catch((error) => {
-        console.error('Error fetching states:', error);
-      });
+    (async () => {
+      
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      console.log("location",location)
+      // setLocation(location);
+      const {latitude,longitude} = location.coords;
+      // const latitude = "14.1654";
+      // const longitude = "75.6681";
+      
+      const apiKey = '04a5800be4bb465bb63d271f5b3941e4';
+      const apiUrl = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&language=en`;
+
+      fetch(apiUrl)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.results && data.results.length > 0) {
+            const districtInfo = data.results[0].components;
+            const district  = districtInfo.state_district.replace(' District', '');
+            const address= `${districtInfo.county}, ${data.results[0].formatted.replace("unnamed road,", "")}`;
+            setGeoResult([{
+              address:address,
+              state: districtInfo.state,
+              latitude,
+              longitude,
+              postcode:districtInfo.postcode,
+              district: district,
+              city:districtInfo['suburb']?districtInfo['suburb']:districtInfo['village']?districtInfo['village']:districtInfo['town']
+            }])
+            //  console.log("geoResult",geoResult),
+             console.log("districtInfo",districtInfo)
+             axios.get(INITURL)
+             .then((response) => {
+               //console.log("inside stat ",response.data?.districts)
+              const districts =response.data?.districts;
+              districts[districtInfo.state] = rearrangeArray(response.data?.districts[districtInfo.state],district);
+               setStates(rearrangeArray(response.data?.states,districtInfo.state)); // Assuming the API response is an array of state options
+               console.log("districts",districts)
+               setDistricts(districts);
+             })
+             .catch((error) => {
+               console.error('Error fetching states:', error);
+             });
+          } else {
+            alert('District information not found.');
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching district information:', error);
+        });
+        if(!states)
+        {
+        axios.get(INITURL)
+        .then((response) => {
+          console.log("inside states",response)
+          setStates(response.data?.states); // Assuming the API response is an array of state options
+          setDistricts(response.data?.districts);
+        })
+        .catch((error) => {
+          console.error('Error fetching states:', error);
+        });
+      }
+    })();
+
   }, []);
 
   const onSubmitHandler = (values) => {
@@ -58,22 +126,25 @@ const InputScreen = () => {
         formData.append(key, value);
       }
     }
+    formData.append("latitude", geoResult[0].latitude);
+    formData.append("longitude", geoResult[0].longitude);
+    formData.append("postcode", geoResult[0].postcode);
     console.log('Login form values:', values,formData);
-    axios.post(URL, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }).then(response => {
-      console.log("response1",response);
-      console.log("response2",response?.data?.id);
-      setTimeout(() => {
-        setResponseText(`Customer Inserted Successfully With Id : ${response?.data?.id}`); // Set the response text to be shown in the modal
-        setShowModal(true); // Show the modal
-      }, 1000); // Delay of 1 second
-    })
-    .catch(error => {
-      console.error("error",error);
-    });
+    // axios.post(URL, formData, {
+    //   headers: {
+    //     'Content-Type': 'multipart/form-data',
+    //   },
+    // }).then(response => {
+    //   console.log("response1",response);
+    //   console.log("response2",response?.data?.id);
+    //   setTimeout(() => {
+    //     setResponseText(`Customer Inserted Successfully With Id : ${response?.data?.id}`); // Set the response text to be shown in the modal
+    //     setShowModal(true); // Show the modal
+    //   }, 1000); // Delay of 1 second
+    // })
+    // .catch(error => {
+    //   console.error("error",error);
+    // });
   };
   const closeModal = () => {
     setShowModal(false);
@@ -112,48 +183,32 @@ const InputScreen = () => {
     <SafeAreaView style={styles.container}>
 
       <Formik
-        // initialValues={{
-        //   name: "D",
-        //   phone: "956629075",
-        //   address: "Kuruva,Honnali,Davangere,Karnataka",
-        //   email: "dayasudhankg@gmail.com",
-        //   landMark:"",
-        //   city:"Shimoga",
-        //   item_name:"",
-        //   item_year:"2020",
-        //   item_price:"25000",
-        //   item_place:"",
-        //   description:"Sample description",
-        //   image:"",
-        //   state:"",
-        //   district:""
-        // }}
         initialValues={{
           name: "",
           phone: "",
-          address: "",
+          address: geoResult?geoResult[0].address:"",
           email: "",
           landMark:"",
-          city:"",
+          city:geoResult?geoResult[0].city:"",
           item_name:"",
           item_year:"",
           item_price:"",
           item_place:"",
           description:"",
           image:"",
-          state:"",
-          district:""
+          state:geoResult?geoResult[0].state:"",
+          district:geoResult?geoResult[0].district:"",
         }}
+        enableReinitialize={true}
         validationSchema={validationSchema}
         onSubmit={(values) => onSubmitHandler(values)}
       >
-        {({ handleChange, handleSubmit,handleBlur, values, errors, touched }) => (
+        {({ handleChange, handleSubmit,handleBlur , values, errors, touched }) => (
           <KeyboardAwareScrollView
           style={styles.content}
           showsVerticalScrollIndicator={false}
           >
-            {/* <View style={styles.formGroup}> */}
-            <Text style={styles.label}>Item Details</Text>
+          <Text style={styles.label}>Item Details</Text>
             <TextInput
               style={styles.input}
               placeholder="Item Name..." 
@@ -218,10 +273,10 @@ const InputScreen = () => {
                   placeholder="Village/City..."
                   onChangeText={handleChange("city")}
                   onBlur={handleBlur("city")}
-                />
+              />
               <Text style={{ color: "red" }}>{errors.city}</Text>
               
-                 <TextInput
+              <TextInput
                   style={styles.input}
                   value={values.address}
                   placeholder="Address.."
@@ -229,18 +284,18 @@ const InputScreen = () => {
                   onBlur={handleBlur("address")}
                   multiline={true} // Set to true for multiline input
                   numberOfLines={4} // Specify the number of lines to display (optional)
-                />
+              />
                 <Text style={{ color: "red" }}>{errors.address}</Text>
               <Text>Select State</Text>
                     <Picker
-                      selectedValue={values.state}
+                       selectedValue={values.state}
                       onValueChange={handleChange("state")}
                     >                    
                     {states.length>0 && states.map((state) => (
                       <Picker.Item key={state} label={state} value={state} />
                     ))}
                     </Picker>
-                <Text>Select District</Text>
+                    <Text>Select District</Text>
                     <Picker
                       selectedValue={values.district}
                       onValueChange={handleChange("district")}
@@ -254,7 +309,7 @@ const InputScreen = () => {
                       <FlatList
                       data= {images}
                       keyExtractor={(item) => item}
-                      // numColumns={2}
+// numColumns={2}
                       renderItem={({ item, index }) => (
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                           <Image source={{ uri: item }} style={{ width: 100, height: 100 }} />

@@ -11,7 +11,7 @@ const CardGrid = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [allDataFetched, setAllDataFetched] = useState(false);
   const [pageSize] = useState(10);
-
+642504
   useEffect(() => {
     fetchData();
   }, []);
