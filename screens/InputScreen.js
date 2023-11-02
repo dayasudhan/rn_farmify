@@ -126,9 +126,12 @@ const InputScreen = () => {
         formData.append(key, value);
       }
     }
-    formData.append("latitude", geoResult[0].latitude);
-    formData.append("longitude", geoResult[0].longitude);
-    formData.append("postcode", geoResult[0].postcode);
+    if(geoResult)
+    {
+      formData.append("latitude", geoResult[0].latitude);
+      formData.append("longitude", geoResult[0].longitude);
+      formData.append("postcode", geoResult[0].postcode);
+    }
     console.log('Login form values:', values,formData);
     axios.post(URL, formData, {
       headers: {

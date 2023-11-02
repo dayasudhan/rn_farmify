@@ -1,43 +1,86 @@
 import React from 'react';
-import { View,  Text, StyleSheet ,TouchableOpacity,Modal} from 'react-native';
-
+import { View, Text, StyleSheet, TouchableOpacity, Share,Linking  } from 'react-native';
 import ImageGallery from './ImageGallery';
-const imageUrls = [
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-665949102-1695639571579-.jpeg',
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-457982009-1695640635314-.jpeg',
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-665949102-1695639571579-.jpeg',
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-457982009-1695640635314-.jpeg',
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-665949102-1695639571579-.jpeg',
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-457982009-1695640635314-.jpeg',
-];
 
-const MyImageComponent = ({ navigation,route }) => {
-  const receivedData = route.params.data; 
-  
-  console.log("receivedData",receivedData)
+const MyImageComponent = ({ navigation, route }) => {
+  const receivedData = route.params.data;
 
-  function handleSubmit()
-  {
-    navigation.navigate('enquiryInput',{ data: receivedData.id });
+  console.log("receivedData", receivedData);
+  const hyphenIndex = receivedData.address.indexOf(' - ');
+
+  let address;
+  if (hyphenIndex !== -1) {
+    // If a hyphen is present, split the address and take the first part
+    address = receivedData.address.substring(0, hyphenIndex);
+  } else {
+    // If no hyphen is present, use the entire address
+    address = receivedData.address;
+  }
+  function handleSubmit() {
+    navigation.navigate('enquiryInput', { data: receivedData.id });
+  }
+
+  function handleShare() {
+    Share.share({
+      message: `Have a look at this item: ${receivedData.name} http://13.232.42.12:3006/buyer/product/item?id=22`,
+    });
+  }
+  function handleCallDealer() {
+    const phone = receivedData?.dealer?.phone;
+    if (phone) {
+      Linking.openURL(`tel:${phone}`);
+    }
   }
   return (
     <View style={styles.container}>
-      
-     
       <View style={styles.infoContainer}>
-      <Text style={styles.title}>{receivedData.name}</Text>
-     
-        
-        <Text style={styles.description}>Description : {receivedData.description}</Text>
-        <Text style={styles.description}>Manufacture Year: {receivedData.makeYear}</Text>
-        <Text style={styles.description}>Price/Rate: {receivedData.price}</Text>
-        <Text style={styles.description}>Seller Details: {receivedData.address1},{ receivedData.city},{ receivedData.state}</Text>
-       
-           <ImageGallery imageUrls={receivedData.image_urls}/>
-           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.title}>{receivedData.name}</Text>
+        <ImageGallery imageUrls={receivedData.image_urls} />
+
+        <View style={styles.table}>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Description:</Text>
+            <Text style={styles.description}>{receivedData.description}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Manufacture Year:</Text>
+            <Text style={styles.description}>{receivedData.makeYear}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Price/Rate:</Text>
+            <Text style={styles.description}>{receivedData.price}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Seller Address:</Text>
+            <Text style={styles.description}>{address}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Seller City/Village:</Text>
+            <Text style={styles.description}>{receivedData.city}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Seller District:</Text>
+            <Text style={styles.description}>{receivedData.district},{receivedData.state}</Text>
+          </View>
+         
+        <View style={styles.tableRow}>
+          <Text style={styles.label}>Dealer Phone:</Text>
+          <Text style={styles.description}>{receivedData?.dealer?.phone}</Text>
+          <TouchableOpacity style={styles.callButton} onPress={handleCallDealer}>
+            <Text style={styles.buttonText}>Call Dealer</Text>
+          </TouchableOpacity>
+        </View>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
             <Text style={styles.buttonText}>Contact/Enquiry</Text>
           </TouchableOpacity>
-       
+
+          <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+            <Text style={styles.buttonText}>Share</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -47,13 +90,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    // justifyContent: 'center',
   },
   image: {
     width: 200,
     height: 200,
-    resizeMode: 'cover', // You can adjust this as needed
-    borderRadius: 10, // Add border radius for rounded corners
+    resizeMode: 'cover',
+    borderRadius: 10,
   },
   infoContainer: {
     marginTop: 10,
@@ -66,12 +108,58 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     marginTop: 5,
-    textAlign: 'center',
+    
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    marginTop: 10,
   },
   button: {
-    marginTop: 20,
+    flex: 1,
+    marginRight: 5,
     backgroundColor: "#2980b9",
     padding: 15,
+    borderRadius: 15,
+  },
+  shareButton: {
+    flex: 1,
+    marginLeft: 5,
+    backgroundColor: "#33cc33",
+    padding: 15,
+    borderRadius: 15,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 18,
+    textAlign: "center",
+  },
+  table: {
+    // width: '100%',
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginVertical: 1,
+    marginHorizontal: 50,
+    padding: 5,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderColor: 'gray',
+    paddingVertical: 1,
+  },
+  tableCell: {
+    flex: 1,
+    flexWrap: 'wrap', // Allow text to wrap to the next line
+  },
+  label: {
+    fontWeight: 'bold',
+  },
+  callButton: {
+    backgroundColor: "#34A853", // Green color for call button
+    padding: 10,
     borderRadius: 15,
   },
   buttonText: {
@@ -83,5 +171,3 @@ const styles = StyleSheet.create({
 });
 
 export default MyImageComponent;
-
-//<Image source={{ uri: "https://farmifyequipments.s3.amazonaws.com/thumbnail-665949102-1695639571579-.jpeg" }} style={styles.image} />
