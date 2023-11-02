@@ -130,21 +130,21 @@ const InputScreen = () => {
     formData.append("longitude", geoResult[0].longitude);
     formData.append("postcode", geoResult[0].postcode);
     console.log('Login form values:', values,formData);
-    // axios.post(URL, formData, {
-    //   headers: {
-    //     'Content-Type': 'multipart/form-data',
-    //   },
-    // }).then(response => {
-    //   console.log("response1",response);
-    //   console.log("response2",response?.data?.id);
-    //   setTimeout(() => {
-    //     setResponseText(`Customer Inserted Successfully With Id : ${response?.data?.id}`); // Set the response text to be shown in the modal
-    //     setShowModal(true); // Show the modal
-    //   }, 1000); // Delay of 1 second
-    // })
-    // .catch(error => {
-    //   console.error("error",error);
-    // });
+    axios.post(URL, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }).then(response => {
+      console.log("response1",response);
+      console.log("response2",response?.data?.id);
+      setTimeout(() => {
+        setResponseText(`Customer Inserted Successfully With Id : ${response?.data?.id}`); // Set the response text to be shown in the modal
+        setShowModal(true); // Show the modal
+      }, 1000); // Delay of 1 second
+    })
+    .catch(error => {
+      console.error("error",error);
+    });
   };
   const closeModal = () => {
     setShowModal(false);
