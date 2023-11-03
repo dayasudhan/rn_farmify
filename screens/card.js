@@ -43,7 +43,7 @@ const CardGrid = ({ navigation }) => {
     // Example of a memoized component
     const MemoizedCard = React.memo(({ item }) => {
       const handleCardPress = () => {
-        navigation.navigate('itemDetail', { data: item });
+        navigation.navigate('ItemDetail', { data: item });
       };
 
       return (
