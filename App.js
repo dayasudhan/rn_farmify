@@ -35,7 +35,7 @@ function MyTabs() {
         options={{
           tabBarLabel: 'Sell',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="bell" color={color} size={26} />
+            <MaterialCommunityIcons name="tractor-variant" color={color} size={26} />
           ),
         }}
       />
@@ -45,7 +45,7 @@ function MyTabs() {
         options={{
           tabBarLabel: 'Enquiries',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="account" color={color} size={26} />
+            <MaterialCommunityIcons name="inbox" color={color} size={26} />
           ),
         }}
         

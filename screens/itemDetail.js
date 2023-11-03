@@ -17,6 +17,7 @@ const MyImageComponent = ({ navigation, route }) => {
     address = receivedData.address;
   }
   function handleSubmit() {
+    
     navigation.navigate('enquiryInput', { data: receivedData.id });
   }
 
@@ -31,6 +32,25 @@ const MyImageComponent = ({ navigation, route }) => {
       Linking.openURL(`tel:${phone}`);
     }
   }
+  const openWhatsApp = () => {
+    // Replace '1234567890' with the phone number or WhatsApp ID of the contact or group
+    const phoneNumber = '9148843555';
+  
+    // Replace 'Hello, WhatsApp!' with the message you want to send
+    const  message= `Have a look at this item: ${receivedData.name} http://13.232.42.12:3006/buyer/product/item?id=22`;
+  
+    // Create a WhatsApp URL with the phone number and message
+    const url = `whatsapp://send?phone=${phoneNumber}&text=${message}`;
+  
+    // Open the WhatsApp app
+    Linking.openURL(url)
+      .then((data) => {
+        console.log('WhatsApp opened: ', data);
+      })
+      .catch(() => {
+        console.error('An error occurred while opening WhatsApp.');
+      });
+  };
   return (
     <View style={styles.container}>
       <View style={styles.infoContainer}>
@@ -74,10 +94,10 @@ const MyImageComponent = ({ navigation, route }) => {
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Contact/Enquiry</Text>
+            <Text style={styles.buttonText}>Enquiry</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+          <TouchableOpacity style={styles.button} onPress={handleShare}>
             <Text style={styles.buttonText}>Share</Text>
           </TouchableOpacity>
         </View>
@@ -112,27 +132,26 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    marginTop: 10,
+    marginTop: 5,
   },
   button: {
     flex: 1,
     marginRight: 5,
     backgroundColor: "#2980b9",
-    padding: 15,
-    borderRadius: 15,
+    padding: 10,
+    borderRadius: 5,
   },
-  shareButton: {
-    flex: 1,
-    marginLeft: 5,
-    backgroundColor: "#33cc33",
-    padding: 15,
-    borderRadius: 15,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 18,
-    textAlign: "center",
+  // shareButton: {
+  //   flex: 1,
+  //   marginLeft: 5,
+  //   backgroundColor: "#33cc33",
+  //   padding: 15,
+  //   borderRadius: 15,
+  // },
+  callButton: {
+    backgroundColor: "#2980b9", // Green color for call button
+    padding: 10,
+    borderRadius: 5,
   },
   table: {
     // width: '100%',
@@ -157,15 +176,12 @@ const styles = StyleSheet.create({
   label: {
     fontWeight: 'bold',
   },
-  callButton: {
-    backgroundColor: "#34A853", // Green color for call button
-    padding: 10,
-    borderRadius: 15,
-  },
+
+
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize: 15,
     textAlign: "center",
   },
 });
