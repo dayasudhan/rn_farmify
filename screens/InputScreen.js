@@ -13,7 +13,7 @@ import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
 const URL = BASE_URL + "upload";
 const INITURL = BASE_URL + "states";
-
+import { Feather } from '@expo/vector-icons';
 const InputScreen = () => {
   const [showModal, setShowModal] = useState(false);
   const [responseText, setResponseText] = useState('');
@@ -171,7 +171,18 @@ const InputScreen = () => {
       setImages((prevImages) => [...prevImages, result.assets[0].uri]);
     }
   };
+  const takePhoto = async () => {
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
+    if (!result.cancelled) {
+      setImages((prevImages) => [...prevImages, result.uri]);
+    }
+  };
   const deleteImage = (index) => {
     const newImages = [...images];
     newImages.splice(index, 1);
@@ -181,10 +192,7 @@ const InputScreen = () => {
     <>
     <SafeAreaView style={styles.topSafeArea} />
 
-    <StatusBar style="light" />
-
-    <SafeAreaView style={styles.container}>
-
+   
       <Formik
         initialValues={{
           name: "",
@@ -308,11 +316,31 @@ const InputScreen = () => {
                     ))}
                     </Picker>
                      
-                      <Button title="Pick images from the gallery" onPress={pickImage} />
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <TouchableOpacity onPress={pickImage} style={{
+                              marginTop: 5,
+                              backgroundColor: "#2980b9",
+                              padding: 10,
+                              borderRadius: 5,
+                              flexDirection: 'row'
+                            }}>
+                      <Feather name="image" size={24} color="white" />
+                      <Text style={styles.buttonText}>Pick from Gallery</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={takePhoto} style={{
+                            marginTop: 5,
+                            backgroundColor: "#2980b9",
+                            padding: 10,
+                            borderRadius: 5,
+                            flexDirection: 'row'
+                          }}>
+                      <Feather name="camera" size={24} color="white" />
+                      <Text style={styles.buttonText}>Take a Photo</Text>
+                    </TouchableOpacity>
+                  </View>
                       <FlatList
                       data= {images}
                       keyExtractor={(item) => item}
-// numColumns={2}
                       renderItem={({ item, index }) => (
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                           <Image source={{ uri: item }} style={{ width: 100, height: 100 }} />
@@ -342,7 +370,6 @@ const InputScreen = () => {
          </View>
       </Modal>
       
-    </SafeAreaView>
     </>
   );
 };

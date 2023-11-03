@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons,Entypo  } from '@expo/vector-icons';
 import card from './screens/card.js'
 import seller from './screens/InputScreen.js'
 import enquiries from './screens/Enquiries.js'
@@ -18,14 +18,15 @@ function MyTabs() {
       activeColor="#e91e63"
       labelStyle={{ fontSize: 12 }}
       style={{ backgroundColor: 'tomato' }}
+      barStyle={{ backgroundColor: 'white' ,height: 70  }}
     >
       <Tab.Screen
-        name="Feed"
+        name="Home"
         component={card}
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="home" color={color} size={26} />
+            <Entypo name="shop" color={color} size={26} />
           ),
         }}
       />
@@ -40,7 +41,7 @@ function MyTabs() {
         }}
       />
       <Tab.Screen
-        name="Enquiries"
+         name="Enquiries"
         component={enquiries}
         options={{
           tabBarLabel: 'Enquiries',
@@ -60,8 +61,8 @@ export default function App() {
      <NavigationContainer>
      <Stack.Navigator initialRouteName="Tabs">
        <Stack.Screen name="Farmify" component={MyTabs} />
-       <Stack.Screen name="itemDetail" component={itemDetail} /> 
-       <Stack.Screen name="enquiryInput" component={EnquiryInput} /> 
+       <Stack.Screen name="ItemDetail" component={itemDetail} /> 
+       <Stack.Screen name="Enquiries" component={EnquiryInput} /> 
      </Stack.Navigator>
    </NavigationContainer>
   );

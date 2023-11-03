@@ -25,8 +25,9 @@ export const styles = StyleSheet.create({
     fontSize: 18,
   },
   content: {
-    padding: 20,
+    padding: 10,
     backgroundColor: CONTENT_BACKGROUND,
+    marginBottom: 5,
   },
   formGroup: {
     marginBottom: 10,
@@ -54,12 +55,19 @@ export const styles = StyleSheet.create({
     marginTop: 20,
     backgroundColor: "#2980b9",
     padding: 15,
-    borderRadius: 15,
+    borderRadius: 5,
   },
+  // button: {
+  //   flex: 1,
+  //   marginRight: 5,
+  //   backgroundColor: "#2980b9",
+  //   padding: 10,
+  //   borderRadius: 5,
+  // },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
-    fontSize: 18,
+    // fontWeight: "bold",
+    fontSize: 15,
     textAlign: "center",
   },
   radioOption: {
