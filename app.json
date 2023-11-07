@@ -12,7 +12,7 @@
     "slug": "farmify",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/ic_launcher",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
