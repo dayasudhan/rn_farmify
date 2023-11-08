@@ -3,7 +3,6 @@ import { View, Image, Text, TouchableOpacity, StyleSheet, Modal, TextInput } fro
 import { useNavigationState } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
 import axios from 'axios';
 import BASE_URL from '../utils/utils';
 
@@ -48,10 +47,10 @@ const DrawerContent = ({ navigation }) => {
   };
 
   return (
-    <View>
-      <Text>Farmify</Text>
+    <View style={styles.container}>
+      <Text style={styles.appName}>Farmify</Text>
       <Image
-        source={require('./assets/ic_launcher.png')}
+        source={require('../assets/ic_launcher.png')}
         style={styles.drawerImage}
       />
 
@@ -76,8 +75,8 @@ const DrawerContent = ({ navigation }) => {
         <MaterialCommunityIcons name="inbox" size={30} color="black" />
         <Text style={styles.drawerText}>{auth && auth.loggedIn ? 'Enquiries' : 'Dealer Login'}</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity
+
+<TouchableOpacity
         style={[
           styles.drawerItem,
           isScreenActive('ShareComponent') && styles.activeDrawerItem,
@@ -141,6 +140,15 @@ const DrawerContent = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  appName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 20,
+  },
   drawerItem: {
     flexDirection: 'row',
     alignItems: 'center',
