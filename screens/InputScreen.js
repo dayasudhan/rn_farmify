@@ -56,7 +56,8 @@ const InputScreen = () => {
         .then((data) => {
           if (data.results && data.results.length > 0) {
             const districtInfo = data.results[0].components;
-            const district  = districtInfo.state_district.replace(' District', '');
+            console.log("districtInfo",districtInfo)
+            const district  = districtInfo?.state_district?.replace(' District', '');
             const address= `${districtInfo.county}, ${data.results[0].formatted.replace("unnamed road,", "")}`;
             setGeoResult([{
               address:address,
@@ -71,11 +72,11 @@ const InputScreen = () => {
              console.log("districtInfo",districtInfo)
              axios.get(INITURL)
              .then((response) => {
-               //console.log("inside stat ",response.data?.districts)
+              // console.log("inside stat ",response.data?.districts,district)
               const districts =response.data?.districts;
               districts[districtInfo.state] = rearrangeArray(response.data?.districts[districtInfo.state],district);
                setStates(rearrangeArray(response.data?.states,districtInfo.state)); // Assuming the API response is an array of state options
-               console.log("districts",districts)
+              // console.log("districts",districts)
                setDistricts(districts);
              })
              .catch((error) => {
@@ -87,10 +88,19 @@ const InputScreen = () => {
         })
         .catch((error) => {
           console.error('Error fetching district information:', error);
-        });
+        }).finally(()=>{
+          console.log("finally")
+          initStates();
+        })
         if(!states)
         {
-        axios.get(INITURL)
+          initStates();
+        }
+    })();
+
+  }, []);
+const initStates = () =>{
+  axios.get(INITURL)
         .then((response) => {
           console.log("inside states",response)
           setStates(response.data?.states); // Assuming the API response is an array of state options
@@ -99,11 +109,7 @@ const InputScreen = () => {
         .catch((error) => {
           console.error('Error fetching states:', error);
         });
-      }
-    })();
-
-  }, []);
-
+}
   const onSubmitHandler = (values) => {
     console.log("onSubmitHandler");
     if (images.length === 0) {
