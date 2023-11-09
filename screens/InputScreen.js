@@ -325,22 +325,22 @@ const initStates = () =>{
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <TouchableOpacity onPress={pickImage} style={{
                               marginTop: 5,
-                              backgroundColor: "#2980b9",
+                              backgroundColor: "#3498db",
                               padding: 10,
                               borderRadius: 5,
                               flexDirection: 'row'
                             }}>
-                      <Feather name="image" size={24} color="white" />
-                      <Text style={styles.buttonText}>Pick from Gallery</Text>
+                      <Feather name="image" size={20} color="white" />
+                      <Text style={styles.buttonText}>Image from Gallery</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={takePhoto} style={{
                             marginTop: 5,
-                            backgroundColor: "#2980b9",
+                            backgroundColor: "#3498db",
                             padding: 10,
                             borderRadius: 5,
                             flexDirection: 'row'
                           }}>
-                      <Feather name="camera" size={24} color="white" />
+                      <Feather name="camera" size={20} color="white" />
                       <Text style={styles.buttonText}>Take a Photo</Text>
                     </TouchableOpacity>
                   </View>
