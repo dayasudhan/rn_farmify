@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, TextInput, StyleSheet, SafeAreaView } from 'react-native';
 import axios from 'axios';
-import BASE_URL from '../utils/utils';
+import {BASE_URL} from '../utils/utils';
 import { StatusBar } from "expo-status-bar";
 import { EvilIcons } from '@expo/vector-icons'; 
 

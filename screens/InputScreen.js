@@ -7,7 +7,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { validationSchema } from "./../utils/validation";
 import { styles } from "./../utils/styles";
 import axios from 'axios';
-import BASE_URL from './../utils/utils' 
+import {BASE_URL} from './../utils/utils' 
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';

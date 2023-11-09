@@ -4,7 +4,7 @@ import { useNavigationState } from '@react-navigation/native';
 import { useAuth } from '../AuthContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
-import BASE_URL from '../utils/utils';
+import { BASE_URL, APP_NAME, APP_VERSION } from '../utils/utils';
 
 const DrawerContent = ({ navigation }) => {
   const navigationState = useNavigationState((state) => state);
@@ -31,16 +31,13 @@ const DrawerContent = ({ navigation }) => {
 
   const handleLoginSubmit = async () => {
     try {
-      const loginData = { 'username': username, 'password': password };
-      await axios.post(BASE_URL + 'login', loginData).then(response => {
-        setTimeout(() => {
-          logIn();
-          setModalVisible(!modalVisible);
-          navigation.navigate('Enquiries');
-        }, 1000);
-      }).catch(error => {
-        alert("Not authenticated");
-      });
+      const loginData = { username, password };
+      const response = await axios.post(BASE_URL + 'login', loginData);
+      setTimeout(() => {
+        logIn();
+        setModalVisible(false);
+        navigation.navigate('Enquiries');
+      }, 1000);
     } catch (error) {
       alert("Not authenticated");
     }
@@ -48,11 +45,10 @@ const DrawerContent = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.appName}>Farmify</Text>
-      <Image
-        source={require('../assets/ic_launcher.png')}
-        style={styles.drawerImage}
-      />
+      <View style={styles.header}>
+        <Text style={styles.appName}>{APP_NAME}</Text>
+        <Image source={require('../assets/ic_launcher.png')} style={styles.drawerImage} />
+      </View>
 
       <TouchableOpacity
         style={[
@@ -76,7 +72,7 @@ const DrawerContent = ({ navigation }) => {
         <Text style={styles.drawerText}>{auth && auth.loggedIn ? 'Enquiries' : 'Dealer Login'}</Text>
       </TouchableOpacity>
 
-<TouchableOpacity
+      <TouchableOpacity
         style={[
           styles.drawerItem,
           isScreenActive('ShareComponent') && styles.activeDrawerItem,
@@ -84,9 +80,12 @@ const DrawerContent = ({ navigation }) => {
         onPress={() => navigateToScreen('ShareComponent')}
       >
         <MaterialCommunityIcons name="share-variant" size={30} color="black" />
-        <Text style={styles.drawerText}> Share It</Text>
+        <Text style={styles.drawerText}>Share It</Text>
       </TouchableOpacity>
 
+      <View style={styles.footer}>
+        <Text style={styles.version}>Version {APP_VERSION}</Text>
+      </View>
       {/* Modal for login */}
       <Modal
         animationType="slide"
@@ -119,7 +118,7 @@ const DrawerContent = ({ navigation }) => {
                   handleLoginSubmit();
                 }}
               >
-                <Text style={styles.textStyle}>Log In</Text>
+              <Text style={styles.textStyle}>Log In</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, { backgroundColor: 'red' }]}
@@ -142,6 +141,13 @@ const DrawerContent = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  header: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   appName: {
     fontSize: 24,
@@ -149,17 +155,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 20,
   },
+  version: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginVertical: 20,
+    color: 'gray',
+  },
   drawerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
   },
   drawerText: {
     marginLeft: 20,
     fontSize: 18,
+    color: 'black',
   },
   activeDrawerItem: {
-    backgroundColor: 'lightblue',
+    backgroundColor: '#e6f7ff',
   },
   centeredView: {
     flex: 1,
@@ -216,7 +230,14 @@ const styles = StyleSheet.create({
     height: 120,
     width: 120,
     borderRadius: 60,
+    alignSelf: 'center',
   },
+  footer: {
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+  },
+  
 });
 
 export default DrawerContent;

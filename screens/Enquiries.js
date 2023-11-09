@@ -15,7 +15,7 @@ import {
   Button
 } from 'react-native';
 import axios from 'axios';
-import BASE_URL from '../utils/utils';
+import {BASE_URL} from '../utils/utils';
 import { useAuth } from '../AuthContext';
 
 const ExpandableComponent = ({ item, onClickFunction }) => {

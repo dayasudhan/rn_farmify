@@ -14,7 +14,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { validationSchema } from './../utils/validationEnquiry';
 import { styles } from './../utils/styles';
 import axios from 'axios';
-import BASE_URL from './../utils/utils';
+import {BASE_URL} from './../utils/utils';
 
 const URL = BASE_URL + 'enquiry';
 
