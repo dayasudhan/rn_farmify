@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler'; // Required for gesture-based navigation
 import React from 'react';
-import { NavigationContainer, } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { MaterialCommunityIcons,Entypo  } from '@expo/vector-icons';
 import card from './screens/card.js'
@@ -18,23 +18,6 @@ const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
-const MainStackNavigator = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={card} />
-      <Stack.Screen name="ItemDetail" component={itemDetail} /> 
-      <Stack.Screen name="Enquiries" component={EnquiryInput} /> 
-    </Stack.Navigator>
-  );
-}
-const SellerStackNavigator = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Sell" component={seller} />
-    </Stack.Navigator>
-  );
-}
-
 function MyTabs() {
   return (
     <Tab.Navigator
@@ -46,9 +29,9 @@ function MyTabs() {
     >
       <Tab.Screen
         name="Home"
-        component={MainStackNavigator}
+        component={card}
         options={{
-          //tabBarLabel: 'Home',
+          tabBarLabel: 'Home',
           tabBarIcon: ({ color }) => (
             <Entypo name="shop" color={color} size={26} />
           ),
@@ -56,7 +39,7 @@ function MyTabs() {
       />
       <Tab.Screen
         name="Sell"
-        component={SellerStackNavigator}
+        component={seller}
         options={{
           tabBarLabel: 'Sell',
           tabBarIcon: ({ color }) => (
@@ -67,14 +50,22 @@ function MyTabs() {
     </Tab.Navigator>
   );
 }
-
+const MainStackNavigator = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Home" component={MyTabs} />
+      <Stack.Screen name="ItemDetail" component={itemDetail} /> 
+      <Stack.Screen name="EnquiryInput" component={EnquiryInput} /> 
+    </Stack.Navigator>
+  );
+}
 const DrawerNavigator = () => {
   return ( 
       <Drawer.Navigator 
       drawerContent={(props) => <DrawerContent {...props} />}>
       <Drawer.Screen
         name="Buy"
-        component={MyTabs}
+        component={MainStackNavigator}
         options={{
           title: 'Farmify',
           drawerIcon: ({ focused, size }) => (

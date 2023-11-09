@@ -18,7 +18,7 @@ const MyImageComponent = ({ navigation, route }) => {
   }
   function handleSubmit() {
     
-    navigation.navigate('enquiryInput', { data: receivedData.id });
+    navigation.navigate('EnquiryInput', { data: receivedData.id });
   }
 
   function handleShare() {
@@ -28,6 +28,7 @@ const MyImageComponent = ({ navigation, route }) => {
   }
   function handleCallDealer() {
     const phone = receivedData?.dealer?.phone;
+    console.log("phone",phone)
     if (phone) {
       Linking.openURL(`tel:${phone}`);
     }
@@ -70,26 +71,24 @@ const MyImageComponent = ({ navigation, route }) => {
             <Text style={styles.label}>Price/Rate:</Text>
             <Text style={styles.description}>{receivedData.price}</Text>
           </View>
-          <View style={styles.tableRow}>
+          {/* <View style={styles.tableRow}>
             <Text style={styles.label}>Seller Address:</Text>
             <Text style={styles.description}>{address}</Text>
           </View>
           <View style={styles.tableRow}>
             <Text style={styles.label}>Seller City/Village:</Text>
             <Text style={styles.description}>{receivedData.city}</Text>
-          </View>
+          </View> */}
           <View style={styles.tableRow}>
             <Text style={styles.label}>Seller District:</Text>
             <Text style={styles.description}>{receivedData.district},{receivedData.state}</Text>
           </View>
          
-        <View style={styles.tableRow}>
+        {/* <View style={styles.tableRow}>
           <Text style={styles.label}>Dealer Phone:</Text>
           <Text style={styles.description}>{receivedData?.dealer?.phone}</Text>
-          <TouchableOpacity style={styles.callButton} onPress={handleCallDealer}>
-            <Text style={styles.buttonText}>Call Dealer</Text>
-          </TouchableOpacity>
-        </View>
+
+        </View> */}
         </View>
 
         <View style={styles.buttonContainer}>
@@ -99,6 +98,10 @@ const MyImageComponent = ({ navigation, route }) => {
 
           <TouchableOpacity style={styles.button} onPress={handleShare}>
             <Text style={styles.buttonText}>Share</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.callButton} onPress={handleCallDealer}>
+            <Text style={styles.buttonText}>Call Dealer</Text>
           </TouchableOpacity>
         </View>
       </View>
