@@ -24,30 +24,36 @@ const InputScreen = () => {
   const [geoResult,setGeoResult]=useState(null);
 
   function rearrangeArray(items, firstitem) {
-    if (!items.includes(firstitem)) {
+    if(!items)
+    {
+      return null;
+    }
+    if (items.includes(firstitem)) {
       return items;
     }
-    const remainingitems = items.filter(item => item !== firstitem);
+    const remainingitems = items?.filter(item => item !== firstitem);
     const rearrangeditems = [firstitem, ...remainingitems];
     console.log("rearrangeArray",rearrangeditems)
     return rearrangeditems;
   }
   useEffect(() => {
     (async () => {
-      
+      console.log("useeffect1")
+      initStates();
+      console.log("useeffect2")
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
+        console.log("useeffect3")
         setErrorMsg('Permission to access location was denied');
-        initStates();
         return;
       }
-    
+      console.log("useeffect4")
       let location = await Location.getCurrentPositionAsync({});
       console.log("location",location)
       // setLocation(location);
       const {latitude,longitude} = location.coords;
-      // const latitude = "14.1654";
-      // const longitude = "75.6681";
+      //  const latitude = "14.1654";
+      //  const longitude = "75.6681";
       
       const apiKey = '04a5800be4bb465bb63d271f5b3941e4';
       const apiUrl = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&language=en`;
@@ -55,9 +61,9 @@ const InputScreen = () => {
       fetch(apiUrl)
         .then((response) => response.json())
         .then((data) => {
-          if (data.results && data.results.length > 0) {
+          if (data.results && data.results.length > 0 && data.results[0].components['country'] === 'India') {
             const districtInfo = data.results[0].components;
-            //console.log("districtInfo",districtInfo)
+            console.log("districtInfo",districtInfo,districtInfo['country'])
             const district  = districtInfo?.state_district?.replace(' District', '');
             const address= `${districtInfo.county}, ${data.results[0].formatted.replace("unnamed road,", "")}`;
             setGeoResult([{
@@ -73,18 +79,21 @@ const InputScreen = () => {
             // console.log("districtInfo",districtInfo)
              axios.get(INITURL)
              .then((response) => {
-              // console.log("inside stat ",response.data?.districts,district)
+               console.log("response.data?.districts",response.data?.districts)
+               console.log("response.data?.states",response.data?.states)
+               console.log("district",district)
               const districts =response.data?.districts;
               districts[districtInfo.state] = rearrangeArray(response.data?.districts[districtInfo.state],district);
                setStates(rearrangeArray(response.data?.states,districtInfo.state)); // Assuming the API response is an array of state options
-              // console.log("districts",districts)
-               setDistricts(districts);
+               console.log("districts",districts)
+               if(districts)
+                 setDistricts(districts);
              })
              .catch((error) => {
                console.error('Error fetching states:', error);
              });
           } else {
-            alert('District information not found.');
+            console.error('District information not found.');
           }
         })
         .catch((error) => {
@@ -93,14 +102,15 @@ const InputScreen = () => {
           console.log("finally")
           initStates();
         })
-        if(!states)
-        {
-          initStates();
-        }
+        // if(!states)
+        // {
+        //   initStates();
+        // }
     })();
 
   }, []);
   const initStates = () =>{
+    console.log("initStates")
   axios.get(INITURL)
         .then((response) => {
           console.log("inside states",response)
@@ -151,22 +161,33 @@ const InputScreen = () => {
         'Content-Type': 'multipart/form-data',
       },
     }).then(response => {
-      console.log("response1",response);
-      console.log("response2",response?.data?.id);
+      // console.log("response1",response);
+      // console.log("response2",response?.data?.id);
 
-        setResponseText(`Customer Inserted Successfully With Id : ${response?.data?.id}`); // Set the response text to be shown in the modal
+        setResponseText(`Item uploaded Successfully With Id : ${response?.data?.id}`); // Set the response text to be shown in the modal
         setShowModal(true); // Show the modal
-
     })
     .catch(error => {
       console.error("error",error);
     }).finally(()=>{
-      setIsSubmitting(false);       
+      setIsSubmitting(false);    
+      console.log("values",values)
+      values.item_name = "";
+       values.item_year = "";
+       values.item_price = "";
+      values.description = "";
+      // values.name = "";
+      // values.phone = "";
+      // values.city = "";
+      // values.address = "";
+      // values.state = "";
+      // values.district = "";
+      setImages([]); // Reset images after the submission is complete   
     })
   };
   const closeModal = () => {
     setShowModal(false);
-    // location.reload();
+
   };
   const openModal = () => {
     setShowModal(true);

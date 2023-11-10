@@ -1,9 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, TextInput, StyleSheet, SafeAreaView } from 'react-native';
 import axios from 'axios';
-import {BASE_URL} from '../utils/utils';
+import { BASE_URL } from '../utils/utils';
 import { StatusBar } from "expo-status-bar";
-import { EvilIcons } from '@expo/vector-icons'; 
+import { EvilIcons } from '@expo/vector-icons';
+
+const MemoizedCard = memo(({ item, onPress }) => {
+  const handleCardPress = () => {
+    onPress();
+  };
+
+  return (
+    <TouchableOpacity style={styles.card} onPress={handleCardPress}>
+      <Image source={{ uri: item.image_urls[0] }} style={styles.cardImage} />
+      <Text style={styles.cardText}>{item.name}</Text>
+      <View style={styles.rightContent}>
+        <EvilIcons name="location" size={14} color="black" />
+        <Text style={styles.cardText2}>{item.district}, ₹ {item.price}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+});
 
 const CardGrid = ({ navigation }) => {
   const [data, setData] = useState([]);
@@ -11,7 +28,7 @@ const CardGrid = ({ navigation }) => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [allDataFetched, setAllDataFetched] = useState(false);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(50);
 
   useEffect(() => {
     fetchData();
@@ -27,7 +44,13 @@ const CardGrid = ({ navigation }) => {
       );
 
       if (response.data.length > 0) {
-        setData((prevData) => [...prevData, ...response.data]);
+        setData((prevData) => {
+          const uniqueItems = response.data.filter((newItem) => {
+            return !prevData.some((prevItem) => prevItem.id === newItem.id);
+          });
+
+          return [...prevData, ...uniqueItems];
+        });
         setPage(page + 1);
       } else {
         setAllDataFetched(true);
@@ -40,25 +63,14 @@ const CardGrid = ({ navigation }) => {
   };
 
   const renderItem = ({ item }) => {
-    // Example of a memoized component
-    const MemoizedCard = React.memo(({ item }) => {
-      const handleCardPress = () => {
-        navigation.navigate('ItemDetail', { data: item });
-      };
-
-      return (
-        <TouchableOpacity style={styles.card} onPress={handleCardPress}>
-          <Image source={{ uri: item.image_urls[0] }} style={styles.cardImage} />
-          <Text style={styles.cardText}>{item.name}</Text>
-          <View style={styles.rightContent}>
-            <EvilIcons name="location" size={14} color="black" />
-            <Text style={styles.cardText2}>{item.district}, ₹ {item.price}</Text>
-          </View>
-        </TouchableOpacity>
-      );
-    });
-
-    return <MemoizedCard item={item} />;
+    return (
+      <MemoizedCard
+        item={item}
+        onPress={() => {
+          navigation.navigate('ItemDetail', { data: item });
+        }}
+      />
+    );
   };
 
   const filteredData = data.filter((item) => {
