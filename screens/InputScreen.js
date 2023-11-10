@@ -20,7 +20,7 @@ const InputScreen = () => {
   const [images, setImages] = useState([]);
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
-
+  const [isSubmitting, setIsSubmitting] = useState(false); 
   const [geoResult,setGeoResult]=useState(null);
 
   function rearrangeArray(items, firstitem) {
@@ -38,9 +38,10 @@ const InputScreen = () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied');
+        initStates();
         return;
       }
-
+    
       let location = await Location.getCurrentPositionAsync({});
       console.log("location",location)
       // setLocation(location);
@@ -56,7 +57,7 @@ const InputScreen = () => {
         .then((data) => {
           if (data.results && data.results.length > 0) {
             const districtInfo = data.results[0].components;
-            console.log("districtInfo",districtInfo)
+            //console.log("districtInfo",districtInfo)
             const district  = districtInfo?.state_district?.replace(' District', '');
             const address= `${districtInfo.county}, ${data.results[0].formatted.replace("unnamed road,", "")}`;
             setGeoResult([{
@@ -69,7 +70,7 @@ const InputScreen = () => {
               city:districtInfo['suburb']?districtInfo['suburb']:districtInfo['village']?districtInfo['village']:districtInfo['town']
             }])
             //  console.log("geoResult",geoResult),
-             console.log("districtInfo",districtInfo)
+            // console.log("districtInfo",districtInfo)
              axios.get(INITURL)
              .then((response) => {
               // console.log("inside stat ",response.data?.districts,district)
@@ -99,7 +100,7 @@ const InputScreen = () => {
     })();
 
   }, []);
-const initStates = () =>{
+  const initStates = () =>{
   axios.get(INITURL)
         .then((response) => {
           console.log("inside states",response)
@@ -109,8 +110,12 @@ const initStates = () =>{
         .catch((error) => {
           console.error('Error fetching states:', error);
         });
-}
+  }
   const onSubmitHandler = (values) => {
+    if (isSubmitting) {
+      console.log("onSubmitHandler isSubmitting true");
+      return; // Disable button if already submitting
+    }
     console.log("onSubmitHandler");
     if (images.length === 0) {
       alert('No images selected , Please select one or more images to upload.');
@@ -138,7 +143,9 @@ const initStates = () =>{
       formData.append("longitude", geoResult[0].longitude);
       formData.append("postcode", geoResult[0].postcode);
     }
-    console.log('Login form values:', values,formData);
+    console.log(' form values:', values,formData);
+    setIsSubmitting(true); 
+    console.log("awat isSubmitting",isSubmitting)
     axios.post(URL, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -146,14 +153,16 @@ const initStates = () =>{
     }).then(response => {
       console.log("response1",response);
       console.log("response2",response?.data?.id);
-      setTimeout(() => {
+
         setResponseText(`Customer Inserted Successfully With Id : ${response?.data?.id}`); // Set the response text to be shown in the modal
         setShowModal(true); // Show the modal
-      }, 1000); // Delay of 1 second
+
     })
     .catch(error => {
       console.error("error",error);
-    });
+    }).finally(()=>{
+      setIsSubmitting(false);       
+    })
   };
   const closeModal = () => {
     setShowModal(false);
@@ -184,9 +193,12 @@ const initStates = () =>{
       aspect: [4, 3],
       quality: 1,
     });
-
-    if (!result.cancelled) {
-      setImages((prevImages) => [...prevImages, result.uri]);
+  
+    if (!result.canceled) {
+      if (result.assets && result.assets.length > 0) {
+        const newImages = [...images, result.assets[0].uri];
+        setImages(newImages);
+      }
     }
   };
   const deleteImage = (index) => {
@@ -357,7 +369,7 @@ const initStates = () =>{
                       )}
             />
              
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={isSubmitting}>
             <Text style={styles.buttonText}>SUBMIT</Text>
           </TouchableOpacity>
           </KeyboardAwareScrollView>
