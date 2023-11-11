@@ -144,13 +144,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
-  // shareButton: {
-  //   flex: 1,
-  //   marginLeft: 5,
-  //   backgroundColor: "#33cc33",
-  //   padding: 15,
-  //   borderRadius: 15,
-  // },
   callButton: {
     backgroundColor: "#2980b9", // Green color for call button
     padding: 10,

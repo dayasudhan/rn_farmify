@@ -12,16 +12,15 @@ import {
   Platform,
   Image,
   Linking,
-  Button
+  Button,
+  Alert,
 } from 'react-native';
 import axios from 'axios';
-import {BASE_URL} from '../utils/utils';
+import { BASE_URL } from '../utils/utils';
 import { useAuth } from '../AuthContext';
 
 const ExpandableComponent = ({ item, onClickFunction }) => {
   const [layoutHeight, setLayoutHeight] = useState(0);
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState(data);
 
   useEffect(() => {
     if (item.isExpanded) {
@@ -42,27 +41,65 @@ const ExpandableComponent = ({ item, onClickFunction }) => {
   };
 
   return (
-    <View>
-      <KeyboardAwareScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity activeOpacity={0.8} onPress={onClickFunction} style={styles.header}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image source={{ uri: item.item.image_urls[0] }} style={styles.itemImage} />
-            <Text style={styles.headerText}>
-              {item.item.name}, {item.item.price}, {item.item.address}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <View style={{ height: layoutHeight, overflow: 'hidden' }}>
-          <Text style={styles.text}>
-            {item.name}, {item.address}, {item.city}, {item.phone}
+    <View style={styles.cardContainer}>
+      <TouchableOpacity activeOpacity={0.8} onPress={onClickFunction} style={styles.cardHeader}>
+        <View style={styles.cardHeaderContent}>
+          <Image source={{ uri: item.item.image_urls[0] }} style={styles.itemImage} />
+          <Text style={styles.cardHeaderText}>
+            {item.item.name}, {item.item.price}, {item.item.city}
           </Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Button title="Call Seller" onPress={() => handleCallPress(item.item.phone)} />
-            <Button title="Call Buyer" onPress={() => handleCallPress(item.phone)} />
-          </View>
-          <View style={styles.separator} />
         </View>
-      </KeyboardAwareScrollView>
+      </TouchableOpacity>
+      <View style={{ height: layoutHeight, overflow: 'hidden' }}>
+      <View style={styles.table}>
+        <View style={styles.tableRow}>
+          <Text style={styles.heading_label}>Item Details:</Text>
+        </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Description:</Text>
+            <Text style={styles.description}>{item.item.description}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Manufacture Year:</Text>
+            <Text style={styles.description}>{item.item.makeYear}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Price/Rate:</Text>
+            <Text style={styles.description}>{item.item.price}</Text>
+          </View>
+            <View style={styles.tableRow}>
+            <Text style={styles.label}>Address:</Text>
+            <Text style={styles.description}>{item.item.address}</Text>
+          </View> 
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>City/Village:</Text>
+            <Text style={styles.description}>{item.item.city}</Text>
+          </View> 
+         <View style={styles.tableRow}>
+            <Text style={styles.label}>District:</Text>
+            <Text style={styles.description}>{item.item.district},{item.item.state}</Text>
+          </View> 
+        </View>
+        <View style={styles.table}>
+          <View style={styles.tableRow}>
+            <Text style={styles.heading_label}>Buyer Details:</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Name:</Text>
+            <Text style={styles.description}>{item.name}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Seller Address:</Text>
+            <Text style={styles.description}>{item.address}</Text>
+          </View>
+        </View>
+      
+        <View style={styles.buttonContainer}>
+          <Button title="Call Seller" onPress={() => handleCallPress(item.item.phone)} />
+          <Button title="Call Buyer" onPress={() => handleCallPress(item.phone)} />
+        </View>
+        <View style={styles.separator} />
+      </View>
     </View>
   );
 };
@@ -70,9 +107,11 @@ const ExpandableComponent = ({ item, onClickFunction }) => {
 const App = ({ navigation }) => {
   const [listDataSource, setListDataSource] = useState([]);
   const [multiSelect, setMultiSelect] = useState(false);
-  const [data, setData] = useState([]);
-  const { loggedIn, logIn, logOut } = useAuth();
+
+
   const [isLoading, setIsLoading] = useState(false);
+  const { loggedIn, logOut } = useAuth();
+
   if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
@@ -82,44 +121,31 @@ const App = ({ navigation }) => {
       setIsLoading(true);
       const response = await axios.get(BASE_URL + 'enquiries');
       if (response.status === 200) {
-        console.log("! 403");
-        setData(response.data);
         setListDataSource(response.data);
+        console.log("response.data",response.data)
       } else {
-        console.log("else 403");
-        setData(null);
-        setListDataSource(null);
+        setListDataSource([]);
       }
-      console.log(response);
     } catch (error) {
-      console.log("else error 403");
-      console.log(error);
-      // handle error here
+      console.log('Error fetching data:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     getEnquiries();
   }, [loggedIn]);
 
   const handleLogoutSubmit = async () => {
-    console.log("handleLogoutSubmit")
     try {
-      await axios.get(BASE_URL + 'logout').then(response => {
-        setTimeout(() => {
-          console.log("logged out successfully", response)
-          setData(null);
-          setListDataSource(null);
-          logOut();
-          navigation.navigate('Home');
-        }, 1000);
-      })
-        .catch(error => {
-          console.error("error", error);
-        });
+      await axios.get(BASE_URL + 'logout');
+      // setData(null);
+      setListDataSource([]);
+      logOut();
+      navigation.navigate('Home');
     } catch (error) {
-      console.error("error", error);
+      console.error('Logout error:', error);
     }
   };
 
@@ -138,33 +164,31 @@ const App = ({ navigation }) => {
     setListDataSource(array);
   };
 
-  return(
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.container}>
-        <View style={{ flexDirection: 'row', padding: 10 }}>
-          <Text style={styles.titleText}>Enquiry List</Text>
-          <TouchableOpacity onPress={() => handleLogoutSubmit()}>
-            <Text style={{ textAlign: 'center', justifyContent: 'center' }}>LogOut</Text>
-          </TouchableOpacity>
-        </View>
-        {isLoading ? (
-          <Text>Loading...</Text>
-        ) : listDataSource && listDataSource.length ? (
-          <ScrollView>
-            {listDataSource.map((item, key) => (
-              <ExpandableComponent
-                key={item.name + key}
-                onClickFunction={() => {
-                  updateLayout(key);
-                }}
-                item={item}
-              />
-            ))}
-          </ScrollView>
-        ) : (
-          <Text>No enquiries available</Text>
-        )}
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.titleText}>Enquiry List</Text>
+        <TouchableOpacity onPress={() => handleLogoutSubmit()}>
+          <Text style={styles.logoutText}>Log Out</Text>
+        </TouchableOpacity>
       </View>
+      {isLoading ? (
+        <Text>Loading...</Text>
+      ) : listDataSource && listDataSource.length ? (
+        <ScrollView style={styles.scrollView}>
+          {listDataSource.map((item, key) => (
+            <ExpandableComponent
+              key={item.name + key}
+              onClickFunction={() => {
+                updateLayout(key);
+              }}
+              item={item}
+            />
+          ))}
+        </ScrollView>
+      ) : (
+        <Text style={styles.noEnquiriesText}>No enquiries available</Text>
+      )}
     </SafeAreaView>
   );
 };
@@ -175,16 +199,51 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+  },
+  label: {
+    fontWeight: 'bold',
+  },
+  heading_label: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+    flex: 1
+  },
   titleText: {
-    flex: 1,
     fontSize: 22,
     fontWeight: 'bold',
   },
-  header: {
+  logoutText: {
+    color: 'blue',
+    fontSize: 16,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  cardContainer: {
     backgroundColor: '#F5FCFF',
+    margin: 10,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  cardHeader: {
     padding: 20,
   },
-  headerText: {
+  cardHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  itemImage: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+    borderRadius: 25,
+  },
+  cardHeaderText: {
     fontSize: 16,
     fontWeight: '500',
   },
@@ -195,19 +254,47 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginRight: 16,
   },
-  text: {
+  cardText: {
     fontSize: 16,
     color: '#606070',
     padding: 10,
   },
-  content: {
-    paddingLeft: 10,
-    paddingRight: 10,
-    backgroundColor: '#fff',
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
   },
-  itemImage: {
-    width: 50,
-    height: 50,
-    marginRight: 10,
+  noEnquiriesText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#606070',
+    marginTop: 20,
+  },
+  table: {
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginVertical: 2,
+    marginHorizontal: 2,
+    padding: 5,
+    width: '100%',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderColor: 'gray',
+    paddingVertical: 1,
+  },
+  tableCell: {
+    flex: 1,
+    flexWrap: 'wrap', // Allow text to wrap to the next line
+  },
+  description: {
+    fontSize: 15,
+    marginTop: 5,
+    // flex: 1, 
+    // flexWrap: 'wrap'
   },
 });
