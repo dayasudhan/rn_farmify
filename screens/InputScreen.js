@@ -2,7 +2,6 @@ import React, { useState,useEffect } from 'react';
 import { View, Text, TextInput, Button,  
   TouchableOpacity,StyleSheet,SafeAreaView,Switch,Modal,Image ,FlatList} from 'react-native';
 import { Formik } from 'formik';
-import { StatusBar } from "expo-status-bar";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { validationSchema } from "./../utils/validation";
 import { styles } from "./../utils/styles";
@@ -10,7 +9,8 @@ import axios from 'axios';
 import {BASE_URL} from './../utils/utils' 
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import * as Location from 'expo-location';
+import { useAuth } from '../AuthContext';
+
 const URL = BASE_URL + "upload";
 const INITURL = BASE_URL + "states";
 import { Feather } from '@expo/vector-icons';
@@ -22,7 +22,7 @@ const InputScreen = () => {
   const [districts, setDistricts] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false); 
   const [geoResult,setGeoResult]=useState(null);
-
+  const { location} = useAuth();
   function rearrangeArray(items, firstitem) {
     if(!items)
     {
@@ -41,20 +41,10 @@ const InputScreen = () => {
       console.log("useeffect1")
       initStates();
       console.log("useeffect2")
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.log("useeffect3")
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
-      console.log("useeffect4")
-      let location = await Location.getCurrentPositionAsync({});
-      console.log("location",location)
-      // setLocation(location);
-      const {latitude,longitude} = location.coords;
-      //  const latitude = "14.1654";
-      //  const longitude = "75.6681";
-      
+      if(!location)
+       return
+      const {latitude,longitude} = location;
+      console.log("location coords",latitude,longitude)
       const apiKey = '04a5800be4bb465bb63d271f5b3941e4';
       const apiUrl = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&language=en`;
 
@@ -102,10 +92,7 @@ const InputScreen = () => {
           console.log("finally")
           initStates();
         })
-        // if(!states)
-        // {
-        //   initStates();
-        // }
+
     })();
 
   }, []);
@@ -176,12 +163,7 @@ const InputScreen = () => {
        values.item_year = "";
        values.item_price = "";
       values.description = "";
-      // values.name = "";
-      // values.phone = "";
-      // values.city = "";
-      // values.address = "";
-      // values.state = "";
-      // values.district = "";
+
       setImages([]); // Reset images after the submission is complete   
     })
   };

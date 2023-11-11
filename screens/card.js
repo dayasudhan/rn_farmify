@@ -4,7 +4,8 @@ import axios from 'axios';
 import { BASE_URL } from '../utils/utils';
 import { StatusBar } from "expo-status-bar";
 import { EvilIcons } from '@expo/vector-icons';
-
+import * as Location from 'expo-location';
+import { useAuth } from '../AuthContext';
 const MemoizedCard = memo(({ item, onPress }) => {
   const handleCardPress = () => {
     onPress();
@@ -29,10 +30,23 @@ const CardGrid = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [allDataFetched, setAllDataFetched] = useState(false);
   const [pageSize] = useState(50);
+  const {  setLocation} = useAuth();
+  useEffect(async () => {
+  fetchData();
+  let { status } = await Location.requestForegroundPermissionsAsync();
+  if (status !== 'granted') {
+    setErrorMsg('Permission to access location was denied');
+    return;
+  }
+  let location = await Location.getCurrentPositionAsync({});
+  console.log("location",location)
+   const coords = {
+    latitude: location.coords.latitude,
+    longitude: location.coords.longitude,
+  };
+  setLocation(coords);
+},[]);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const fetchData = async () => {
     if (loading || allDataFetched) return;
