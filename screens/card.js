@@ -1,5 +1,5 @@
 import React, { useEffect, useState, memo } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, TextInput, StyleSheet, SafeAreaView } from 'react-native';
+import {AppState , View, Text, FlatList, TouchableOpacity, Image, TextInput, StyleSheet, SafeAreaView } from 'react-native';
 import axios from 'axios';
 import { BASE_URL } from '../utils/utils';
 import { StatusBar } from "expo-status-bar";
@@ -31,30 +31,36 @@ const CardGrid = ({ navigation }) => {
   const [allDataFetched, setAllDataFetched] = useState(false);
   const [pageSize] = useState(50);
   const {  setLocation} = useAuth();
-  useEffect(async () => {
-  fetchData();
-  let { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== 'granted') {
-    setErrorMsg('Permission to access location was denied');
-    return;
-  }
-  let location = await Location.getCurrentPositionAsync({});
-  console.log("location",location)
-   const coords = {
-    latitude: location.coords.latitude,
-    longitude: location.coords.longitude,
+
+  const [appState, setAppState] = useState(AppState.currentState);
+  //const [firstTime, setFirstTime] = useState(false);
+  const handleAppStateChange = (nextAppState) => {
+    console.log('App state changed:', nextAppState);
+    setAppState(nextAppState);
+    if(nextAppState === 'active')
+    {
+      //setFirstTime(true);
+      console.log("nextAppState",nextAppState)
+      fetchData2(true);
+    }
   };
-  setLocation(coords);
-},[]);
-
-
-  const fetchData = async () => {
-    if (loading || allDataFetched) return;
+  const fetchData = () =>{
+    return fetchData2(false)
+  }
+  const fetchData2 = async (firstTime) => {
+    console.log("fetchData1",page,loading,allDataFetched,firstTime)
+    if (!firstTime && (loading || allDataFetched )) 
+    {
+      console.log("54 line")
+      return;
+    }
 
     setLoading(true);
+    const pg = firstTime?1:page;
+    console.log("pg",pg)
     try {
       const response = await axios.get(
-        `${BASE_URL}items_by_page?page=${page}&pageSize=${pageSize}`
+        `${BASE_URL}items_by_page?page=${pg}&pageSize=${pageSize}`
       );
 
       if (response.data.length > 0) {
@@ -63,9 +69,11 @@ const CardGrid = ({ navigation }) => {
             return !prevData.some((prevItem) => prevItem.id === newItem.id);
           });
 
-          return [...prevData, ...uniqueItems];
+          return firstTime ?[...uniqueItems,...prevData]:[...prevData, ...uniqueItems];
         });
-        setPage(page + 1);
+        // setFirstTime(false);
+        if(!firstTime || (firstTime &&page==1 ))
+          setPage(page + 1);
       } else {
         setAllDataFetched(true);
       }
@@ -75,7 +83,47 @@ const CardGrid = ({ navigation }) => {
       setLoading(false);
     }
   };
+  async function getLocation() {
+    console.log("getLocation")
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
+      return;
+    }
+    let location = await Location.getCurrentPositionAsync({});
+    console.log("location",location)
+    const coords = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    };
+    setLocation(coords);
+}
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    // if(appState === 'active')
+    // {
+    //   console.log("appState",appState)
+      fetchData();
+   // }
+    // const onFocus = navigation.addListener('focus', () => {
+    //   console.log('CardGrid component is focused');
+    //   fetchData();
+    // });
 
+    // const onBlur = navigation.addListener('blur', () => {
+    //   console.log('CardGrid component is blurred');
+    // });
+    return () => {
+      subscription.remove();
+      console.log('Card Component is unmounted');
+    };
+  },[]);
+  useEffect(() => {
+    getLocation();
+  },[]);
+  // useEffect(() => {
+  //   fetchData();
+  // },[firstTime]);
   const renderItem = ({ item }) => {
     return (
       <MemoizedCard
