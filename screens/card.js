@@ -1,9 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, TextInput, StyleSheet, SafeAreaView } from 'react-native';
+import React, { useEffect, useState, memo } from 'react';
+import {AppState , View, Text, FlatList, TouchableOpacity, Image, TextInput, StyleSheet, SafeAreaView } from 'react-native';
 import axios from 'axios';
-import BASE_URL from '../utils/utils';
+import { BASE_URL } from '../utils/utils';
 import { StatusBar } from "expo-status-bar";
-import { EvilIcons } from '@expo/vector-icons'; 
+import { EvilIcons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
+import { useAuth } from '../AuthContext';
+const MemoizedCard = memo(({ item, onPress }) => {
+  const handleCardPress = () => {
+    onPress();
+  };
+
+  return (
+    <TouchableOpacity style={styles.card} onPress={handleCardPress}>
+      <Image source={{ uri: item.image_urls[0] }} style={styles.cardImage} />
+      <Text style={styles.cardText}>{item.name}</Text>
+      <View style={styles.rightContent}>
+        <EvilIcons name="location" size={14} color="black" />
+        <Text style={styles.cardText2}>{item.district}, ₹ {item.price}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+});
 
 const CardGrid = ({ navigation }) => {
   const [data, setData] = useState([]);
@@ -11,24 +29,51 @@ const CardGrid = ({ navigation }) => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [allDataFetched, setAllDataFetched] = useState(false);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(50);
+  const {  setLocation} = useAuth();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    if (loading || allDataFetched) return;
+  const [appState, setAppState] = useState(AppState.currentState);
+  //const [firstTime, setFirstTime] = useState(false);
+  const handleAppStateChange = (nextAppState) => {
+    console.log('App state changed:', nextAppState);
+    setAppState(nextAppState);
+    if(nextAppState === 'active')
+    {
+      //setFirstTime(true);
+      console.log("nextAppState",nextAppState)
+      fetchData2(true);
+    }
+  };
+  const fetchData = () =>{
+    return fetchData2(false)
+  }
+  const fetchData2 = async (firstTime) => {
+    console.log("fetchData1",page,loading,allDataFetched,firstTime)
+    if (!firstTime && (loading || allDataFetched )) 
+    {
+      console.log("54 line")
+      return;
+    }
 
     setLoading(true);
+    const pg = firstTime?1:page;
+    console.log("pg",pg)
     try {
       const response = await axios.get(
-        `${BASE_URL}items_by_page?page=${page}&pageSize=${pageSize}`
+        `${BASE_URL}items_by_page?page=${pg}&pageSize=${pageSize}`
       );
 
       if (response.data.length > 0) {
-        setData((prevData) => [...prevData, ...response.data]);
-        setPage(page + 1);
+        setData((prevData) => {
+          const uniqueItems = response.data.filter((newItem) => {
+            return !prevData.some((prevItem) => prevItem.id === newItem.id);
+          });
+
+          return firstTime ?[...uniqueItems,...prevData]:[...prevData, ...uniqueItems];
+        });
+        // setFirstTime(false);
+        if(!firstTime || (firstTime &&page==1 ))
+          setPage(page + 1);
       } else {
         setAllDataFetched(true);
       }
@@ -38,27 +83,56 @@ const CardGrid = ({ navigation }) => {
       setLoading(false);
     }
   };
+  async function getLocation() {
+    console.log("getLocation")
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
+      return;
+    }
+    let location = await Location.getCurrentPositionAsync({});
+    console.log("location",location)
+    const coords = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    };
+    setLocation(coords);
+}
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    // if(appState === 'active')
+    // {
+    //   console.log("appState",appState)
+      fetchData();
+   // }
+    // const onFocus = navigation.addListener('focus', () => {
+    //   console.log('CardGrid component is focused');
+    //   fetchData();
+    // });
 
+    // const onBlur = navigation.addListener('blur', () => {
+    //   console.log('CardGrid component is blurred');
+    // });
+    return () => {
+      subscription.remove();
+      console.log('Card Component is unmounted');
+    };
+  },[]);
+  useEffect(() => {
+    getLocation();
+  },[]);
+  // useEffect(() => {
+  //   fetchData();
+  // },[firstTime]);
   const renderItem = ({ item }) => {
-    // Example of a memoized component
-    const MemoizedCard = React.memo(({ item }) => {
-      const handleCardPress = () => {
-        navigation.navigate('ItemDetail', { data: item });
-      };
-
-      return (
-        <TouchableOpacity style={styles.card} onPress={handleCardPress}>
-          <Image source={{ uri: item.image_urls[0] }} style={styles.cardImage} />
-          <Text style={styles.cardText}>{item.name}</Text>
-          <View style={styles.rightContent}>
-            <EvilIcons name="location" size={14} color="black" />
-            <Text style={styles.cardText2}>{item.district}, ₹{item.price}</Text>
-          </View>
-        </TouchableOpacity>
-      );
-    });
-
-    return <MemoizedCard item={item} />;
+    return (
+      <MemoizedCard
+        item={item}
+        onPress={() => {
+          navigation.navigate('ItemDetail', { data: item });
+        }}
+      />
+    );
   };
 
   const filteredData = data.filter((item) => {

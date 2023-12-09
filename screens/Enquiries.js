@@ -1,6 +1,5 @@
-// Import React
-import React, {useEffect, useState} from 'react';
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import React, { useEffect, useState } from 'react';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   SafeAreaView,
   LayoutAnimation,
@@ -12,19 +11,16 @@ import {
   TouchableOpacity,
   Platform,
   Image,
-  TextInput,
   Linking,
-  Button
-
+  Button,
+  Alert,
 } from 'react-native';
 import axios from 'axios';
-import BASE_URL from '../utils/utils';
-import Modal from 'react-native-modal'; // Import the modal component
-const ExpandableComponent = ({item, onClickFunction}) => {
-  //Custom Component for the Expandable List
+import { BASE_URL } from '../utils/utils';
+import { useAuth } from '../AuthContext';
+
+const ExpandableComponent = ({ item, onClickFunction }) => {
   const [layoutHeight, setLayoutHeight] = useState(0);
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState(data);
 
   useEffect(() => {
     if (item.isExpanded) {
@@ -32,12 +28,9 @@ const ExpandableComponent = ({item, onClickFunction}) => {
     } else {
       setLayoutHeight(0);
     }
-
-    
-    
   }, [item.isExpanded]);
+
   const handleCallPress = (phone) => {
-  
     Linking.openURL(`tel:${phone}`)
       .then((supported) => {
         if (!supported) {
@@ -46,176 +39,144 @@ const ExpandableComponent = ({item, onClickFunction}) => {
       })
       .catch((err) => console.error('An error occurred', err));
   };
+
   return (
-    <View>
-        <KeyboardAwareScrollView
-          style={styles.content}
-          showsVerticalScrollIndicator={false}
-          >
-
-      <TouchableOpacity
-  activeOpacity={0.8}
-  onPress={onClickFunction}
-  style={styles.header}>
-  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-
-    <Image
-      source={{ uri: item.item.image_urls[0] }}
-      style={styles.itemImage}
-    />
-        <Text style={styles.headerText}>
-      {item.item.name},{item.item.price},{item.item.address}
-    </Text>
-  </View>
-</TouchableOpacity>
-      <View
-        style={{
-          height: layoutHeight,
-          overflow: 'hidden',
-        }}>
-          
-            <Text style={styles.text}>
-              {item.name}, {item.address},{item.city},{item.phone}
-            </Text>
-
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Button title="Call Seller" onPress={() => handleCallPress(item.item.phone)} />
-              <Button title="Call Buyer" onPress={() => handleCallPress(item.phone)} />
+    <View style={styles.cardContainer}>
+      <TouchableOpacity activeOpacity={0.8} onPress={onClickFunction} style={styles.cardHeader}>
+        <View style={styles.cardHeaderContent}>
+          <Image source={{ uri: item.item.image_urls[0] }} style={styles.itemImage} />
+          <Text style={styles.cardHeaderText}>
+            {item.item.name}, {item.item.price}, {item.item.city}
+          </Text>
+        </View>
+      </TouchableOpacity>
+      <View style={{ height: layoutHeight, overflow: 'hidden' }}>
+      <View style={styles.table}>
+        <View style={styles.tableRow}>
+          <Text style={styles.heading_label}>Item Details:</Text>
+        </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Description:</Text>
+            <Text style={styles.description}>{item.item.description}</Text>
           </View>
-            <View style={styles.separator} />
-
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Manufacture Year:</Text>
+            <Text style={styles.description}>{item.item.makeYear}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Price/Rate:</Text>
+            <Text style={styles.description}>{item.item.price}</Text>
+          </View>
+            <View style={styles.tableRow}>
+            <Text style={styles.label}>Address:</Text>
+            <Text style={styles.description}>{item.item.address}</Text>
+          </View> 
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>City/Village:</Text>
+            <Text style={styles.description}>{item.item.city}</Text>
+          </View> 
+         <View style={styles.tableRow}>
+            <Text style={styles.label}>District:</Text>
+            <Text style={styles.description}>{item.item.district},{item.item.state}</Text>
+          </View> 
+        </View>
+        <View style={styles.table}>
+          <View style={styles.tableRow}>
+            <Text style={styles.heading_label}>Buyer Details:</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Name:</Text>
+            <Text style={styles.description}>{item.name}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Seller Address:</Text>
+            <Text style={styles.description}>{item.address}</Text>
+          </View>
+        </View>
+      
+        <View style={styles.buttonContainer}>
+          <Button title="Call Seller" onPress={() => handleCallPress(item.item.phone)} />
+          <Button title="Call Buyer" onPress={() => handleCallPress(item.phone)} />
+        </View>
+        <View style={styles.separator} />
       </View>
-      </KeyboardAwareScrollView>
     </View>
   );
 };
 
-const App = () => {
+const App = ({ navigation }) => {
   const [listDataSource, setListDataSource] = useState([]);
   const [multiSelect, setMultiSelect] = useState(false);
-  const [data, setData] = useState([]);
-  const [isLoginModalVisible, setLoginModalVisible] = useState(false);
-  const [isLoginggeIn, setLoginggeIn] = useState(false);
-  const [username, setUsername] = useState(''); // State for username input
-  const [password, setPassword] = useState(''); // State for password input
+
+
+  const [isLoading, setIsLoading] = useState(false);
+  const { loggedIn, logOut } = useAuth();
 
   if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
-  const getEnquiries = async () =>
-  {
-   await axios.get(BASE_URL + 'enquiries')
-    .then(response => {
-        if(response.status != 403)
-        {
-          console.log("! 403")
-        setData(response.data);
+
+  const getEnquiries = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(BASE_URL + 'enquiries');
+      if (response.status === 200) {
         setListDataSource(response.data);
-        }
-        else
-        {
-          console.log("else 403")
-        setData(null);
-        setListDataSource(null);
-        setLoginModalVisible(true);
-        }
-        console.log(response);
-    })
-    .catch(error => {
-      console.log("else error 403")
-      setLoginModalVisible(true);
-      console.log(error);
-    });
-  }
+        console.log("response.data",response.data)
+      } else {
+        setListDataSource([]);
+      }
+    } catch (error) {
+      console.log('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     getEnquiries();
-    },[]);
-  const handleLoginSubmit = async () => {
-    try {
-      const loginData = { 'username': username, 'password': password }
-      await axios.post(BASE_URL + 'login', loginData).then(response => {
-       
-        setTimeout(() => {
-          console.log("loggedin successfully",response)
-          setLoginggeIn(true);
-          setLoginModalVisible(false);
-          getEnquiries();
-        }, 1000);   
-      })
-      .catch(error => {
-        console.error("error",error);
-        setLoginggeIn(false);
-        // alert("Not auntheticated")
-      });
-    } catch (error) {
-      console.error("error",error);
-      // alert("Not auntheticated")
-      setLoginggeIn(false);
-    }
-    
-  };
-  
+  }, [loggedIn]);
+
   const handleLogoutSubmit = async () => {
-    console.log("handleLogoutSubmit")
-      try {
-        await axios.get(BASE_URL + 'logout').then(response => {
-        
-          setTimeout(() => {
-            console.log("logged out successfully",response)
-            setLoginggeIn(false);
-            setLoginModalVisible(true);
-            setData(null);
-            setListDataSource(null);
-          }, 1000);   
-        })
-        .catch(error => {
-          console.error("error",error);
-          // alert("Not auntheticated")
-        });
-      } catch (error) {
-        console.error("error",error);
-        // alert("Not auntheticated")
-      }
+    try {
+      await axios.get(BASE_URL + 'logout');
+      // setData(null);
+      setListDataSource([]);
+      logOut();
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const updateLayout = (index) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const array = [...listDataSource];
     if (multiSelect) {
-      // If multiple select is enabled
       array[index]['isExpanded'] = !array[index]['isExpanded'];
     } else {
-      // If single select is enabled
       array.map((value, placeindex) =>
         placeindex === index
-          ? (array[placeindex]['isExpanded'] =
-             !array[placeindex]['isExpanded'])
+          ? (array[placeindex]['isExpanded'] = !array[placeindex]['isExpanded'])
           : (array[placeindex]['isExpanded'] = false),
-      ); 
+      );
     }
     setListDataSource(array);
   };
 
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <View style={styles.container}>
-        <View style={{flexDirection: 'row', padding: 10}}>
-          <Text style={styles.titleText}>Enquiry List</Text>
-          <TouchableOpacity
-            onPress={() => handleLogoutSubmit()}>
-            <Text
-              style={{
-                textAlign: 'center',
-                justifyContent: 'center',
-              }}>
-              {isLoginggeIn
-                ? 'LogOut'
-                : 'Dealer LogIn'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <ScrollView>
-          {listDataSource && listDataSource.map((item, key) => (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.titleText}>Enquiry List</Text>
+        <TouchableOpacity onPress={() => handleLogoutSubmit()}>
+          <Text style={styles.logoutText}>Log Out</Text>
+        </TouchableOpacity>
+      </View>
+      {isLoading ? (
+        <Text>Loading...</Text>
+      ) : listDataSource && listDataSource.length ? (
+        <ScrollView style={styles.scrollView}>
+          {listDataSource.map((item, key) => (
             <ExpandableComponent
               key={item.name + key}
               onClickFunction={() => {
@@ -225,58 +186,64 @@ const App = () => {
             />
           ))}
         </ScrollView>
-      </View>
-       {/* Login Modal */}
-       <Modal isVisible={isLoginModalVisible}>
-        <View style={styles.loginModalContainer}>
-          <Text style={styles.loginModalTitle}>Dealer Login</Text>
-          <TextInput
-            style={styles.loginModalInput}
-            placeholder="Username"
-            value={username}
-            onChangeText={setUsername}
-          />
-          <TextInput
-            style={styles.loginModalInput}
-            placeholder="Password"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity
-            style={styles.loginModalButton}
-            onPress={handleLoginSubmit}
-          >
-            <Text style={styles.loginModalButtonText}>Login</Text>
-          </TouchableOpacity>
-            {/* Close button */}
-    <TouchableOpacity
-      style={styles.closeButton}
-      onPress={() => {setLoginModalVisible(false)}}
-    >
-      <Text style={styles.closeButtonText}>Close</Text>
-    </TouchableOpacity>
-        </View>
-      </Modal>
+      ) : (
+        <Text style={styles.noEnquiriesText}>No enquiries available</Text>
+      )}
     </SafeAreaView>
   );
 };
 
 export default App;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+  },
+  label: {
+    fontWeight: 'bold',
+  },
+  heading_label: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+    flex: 1
+  },
   titleText: {
-    flex: 1,
     fontSize: 22,
     fontWeight: 'bold',
   },
-  header: {
+  logoutText: {
+    color: 'blue',
+    fontSize: 16,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  cardContainer: {
     backgroundColor: '#F5FCFF',
+    margin: 10,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  cardHeader: {
     padding: 20,
   },
-  headerText: {
+  cardHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  itemImage: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+    borderRadius: 25,
+  },
+  cardHeaderText: {
     fontSize: 16,
     fontWeight: '500',
   },
@@ -287,167 +254,47 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginRight: 16,
   },
-  text: {
+  cardText: {
     fontSize: 16,
     color: '#606070',
     padding: 10,
   },
-  content: {
-    paddingLeft: 10,
-    paddingRight: 10,
-    backgroundColor: '#fff',
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
   },
-  itemImage: {
-    width: 50,
-    height: 50,
-    marginRight: 10,
+  noEnquiriesText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#606070',
+    marginTop: 20,
   },
-  loginModalContainer: {
-    backgroundColor: 'white',
-    padding: 16,
+  table: {
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginVertical: 2,
+    marginHorizontal: 2,
+    padding: 5,
+    width: '100%',
   },
-  loginModalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  loginModalInput: {
+  tableRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderColor: 'gray',
-    marginBottom: 16,
+    paddingVertical: 1,
   },
-  loginModalButton: {
-    backgroundColor: 'blue',
-    padding: 12,
-    alignItems: 'center',
-    borderRadius: 8,
+  tableCell: {
+    flex: 1,
+    flexWrap: 'wrap', // Allow text to wrap to the next line
   },
-  loginModalButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    backgroundColor: 'red', // You can choose the desired background color
-    padding: 12,
-    alignItems: 'center',
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  closeButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+  description: {
+    fontSize: 15,
+    marginTop: 5,
+    // flex: 1, 
+    // flexWrap: 'wrap'
   },
 });
-
-//Dummy content to show
-//You can also use dynamic data by calling webservice
-const CONTENT = [
-  {
-    isExpanded: false,
-    category_name: 'Item 1',
-    subcategory: [
-      {id: 1, val: 'Sub Cat 1'},
-      {id: 3, val: 'Sub Cat 3'},
-    ],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 2',
-    subcategory: [
-      {id: 4, val: 'Sub Cat 4'},
-      {id: 5, val: 'Sub Cat 5'},
-    ],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 3',
-    subcategory: [
-      {id: 7, val: 'Sub Cat 7'},
-      {id: 9, val: 'Sub Cat 9'},
-    ],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 4',
-    subcategory: [
-      {id: 10, val: 'Sub Cat 10'},
-      {id: 12, val: 'Sub Cat 2'},
-    ],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 5',
-    subcategory: [
-      {id: 13, val: 'Sub Cat 13'},
-      {id: 15, val: 'Sub Cat 5'},
-    ],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 6',
-    subcategory: [
-      {id: 17, val: 'Sub Cat 17'},
-      {id: 18, val: 'Sub Cat 8'},
-    ],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 7',
-    subcategory: [{id: 20, val: 'Sub Cat 20'}],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 8',
-    subcategory: [{id: 22, val: 'Sub Cat 22'}],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 9',
-    subcategory: [
-      {id: 26, val: 'Sub Cat 26'},
-      {id: 27, val: 'Sub Cat 7'},
-    ],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 10',
-    subcategory: [
-      {id: 28, val: 'Sub Cat 28'},
-      {id: 30, val: 'Sub Cat 0'},
-    ],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 11',
-    subcategory: [{id: 31, val: 'Sub Cat 31'}],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 12',
-    subcategory: [{id: 34, val: 'Sub Cat 34'}],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 13',
-    subcategory: [
-      {id: 38, val: 'Sub Cat 38'},
-      {id: 39, val: 'Sub Cat 9'},
-    ],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 14',
-    subcategory: [
-      {id: 40, val: 'Sub Cat 40'},
-      {id: 42, val: 'Sub Cat 2'},
-    ],
-  },
-  {
-    isExpanded: false,
-    category_name: 'Item 15',
-    subcategory: [
-      {id: 43, val: 'Sub Cat 43'},
-      {id: 44, val: 'Sub Cat 44'},
-    ],
-  },
-];

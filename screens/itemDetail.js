@@ -1,14 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Share,Linking  } from 'react-native';
 import ImageGallery from './ImageGallery';
-const imageUrls = [
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-665949102-1695639571579-.jpeg',
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-457982009-1695640635314-.jpeg',
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-665949102-1695639571579-.jpeg',
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-457982009-1695640635314-.jpeg',
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-665949102-1695639571579-.jpeg',
-  'https://farmifyequipments.s3.amazonaws.com/thumbnail-457982009-1695640635314-.jpeg',
-];
 
 const MyImageComponent = ({ navigation, route }) => {
   const receivedData = route.params.data;
@@ -26,7 +18,7 @@ const MyImageComponent = ({ navigation, route }) => {
   }
   function handleSubmit() {
     
-    navigation.navigate('enquiryInput', { data: receivedData.id });
+    navigation.navigate('EnquiryInput', { data: receivedData.id });
   }
 
   function handleShare() {
@@ -80,26 +72,24 @@ const MyImageComponent = ({ navigation, route }) => {
             <Text style={styles.label}>Price/Rate:</Text>
             <Text style={styles.description}>{receivedData.price}</Text>
           </View>
-          <View style={styles.tableRow}>
+          {/* <View style={styles.tableRow}>
             <Text style={styles.label}>Seller Address:</Text>
             <Text style={styles.description}>{address}</Text>
           </View>
           <View style={styles.tableRow}>
             <Text style={styles.label}>Seller City/Village:</Text>
             <Text style={styles.description}>{receivedData.city}</Text>
-          </View>
+          </View> */}
           <View style={styles.tableRow}>
             <Text style={styles.label}>Seller District:</Text>
             <Text style={styles.description}>{receivedData.district},{receivedData.state}</Text>
           </View>
          
-        <View style={styles.tableRow}>
+        {/* <View style={styles.tableRow}>
           <Text style={styles.label}>Dealer Phone:</Text>
           <Text style={styles.description}>{receivedData?.dealer?.phone}</Text>
-          <TouchableOpacity style={styles.callButton} onPress={handleCallDealer}>
-            <Text style={styles.buttonText}>Call Dealer</Text>
-          </TouchableOpacity>
-        </View>
+
+        </View> */}
         </View>
 
         <View style={styles.buttonContainer}>
@@ -109,6 +99,10 @@ const MyImageComponent = ({ navigation, route }) => {
 
           <TouchableOpacity style={styles.button} onPress={handleShare}>
             <Text style={styles.buttonText}>Share</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.callButton} onPress={handleCallDealer}>
+            <Text style={styles.buttonText}>Call Dealer</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -2,15 +2,15 @@ import React, { useState,useEffect } from 'react';
 import { View, Text, TextInput, Button,  
   TouchableOpacity,StyleSheet,SafeAreaView,Switch,Modal,Image ,FlatList} from 'react-native';
 import { Formik } from 'formik';
-import { StatusBar } from "expo-status-bar";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { validationSchema } from "./../utils/validation";
 import { styles } from "./../utils/styles";
 import axios from 'axios';
-import BASE_URL from './../utils/utils' 
+import {BASE_URL} from './../utils/utils' 
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import * as Location from 'expo-location';
+import { useAuth } from '../AuthContext';
+
 const URL = BASE_URL + "upload";
 const INITURL = BASE_URL + "states";
 import { Feather } from '@expo/vector-icons';
@@ -20,43 +20,41 @@ const InputScreen = () => {
   const [images, setImages] = useState([]);
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
-
+  const [isSubmitting, setIsSubmitting] = useState(false); 
   const [geoResult,setGeoResult]=useState(null);
-
+  const { location} = useAuth();
   function rearrangeArray(items, firstitem) {
-    if (!items.includes(firstitem)) {
+    if(!items)
+    {
+      return null;
+    }
+    if (items.includes(firstitem)) {
       return items;
     }
-    const remainingitems = items.filter(item => item !== firstitem);
+    const remainingitems = items?.filter(item => item !== firstitem);
     const rearrangeditems = [firstitem, ...remainingitems];
     console.log("rearrangeArray",rearrangeditems)
     return rearrangeditems;
   }
   useEffect(() => {
     (async () => {
-      
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      console.log("location",location)
-      // setLocation(location);
-      const {latitude,longitude} = location.coords;
-      // const latitude = "14.1654";
-      // const longitude = "75.6681";
-      
+      console.log("useeffect1")
+      initStates();
+      console.log("useeffect2")
+      if(!location)
+       return
+      const {latitude,longitude} = location;
+      console.log("location coords",latitude,longitude)
       const apiKey = '04a5800be4bb465bb63d271f5b3941e4';
       const apiUrl = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&language=en`;
 
       fetch(apiUrl)
         .then((response) => response.json())
         .then((data) => {
-          if (data.results && data.results.length > 0) {
+          if (data.results && data.results.length > 0 && data.results[0].components['country'] === 'India') {
             const districtInfo = data.results[0].components;
-            const district  = districtInfo.state_district.replace(' District', '');
+            console.log("districtInfo",districtInfo,districtInfo['country'])
+            const district  = districtInfo?.state_district?.replace(' District', '');
             const address= `${districtInfo.county}, ${data.results[0].formatted.replace("unnamed road,", "")}`;
             setGeoResult([{
               address:address,
@@ -68,29 +66,40 @@ const InputScreen = () => {
               city:districtInfo['suburb']?districtInfo['suburb']:districtInfo['village']?districtInfo['village']:districtInfo['town']
             }])
             //  console.log("geoResult",geoResult),
-             console.log("districtInfo",districtInfo)
+            // console.log("districtInfo",districtInfo)
              axios.get(INITURL)
              .then((response) => {
-               //console.log("inside stat ",response.data?.districts)
+              // console.log("inside stat ",response.data?.districts,district)
               const districts =response.data?.districts;
               districts[districtInfo.state] = rearrangeArray(response.data?.districts[districtInfo.state],district);
                setStates(rearrangeArray(response.data?.states,districtInfo.state)); // Assuming the API response is an array of state options
                console.log("districts",districts)
-               setDistricts(districts);
+               if(districts)
+                 setDistricts(districts);
              })
              .catch((error) => {
                console.error('Error fetching states:', error);
              });
           } else {
-            alert('District information not found.');
+            console.error('District information not found.');
           }
         })
         .catch((error) => {
           console.error('Error fetching district information:', error);
-        });
-        if(!states)
-        {
-        axios.get(INITURL)
+        }).finally(()=>{
+          console.log("finally")
+          initStates();
+        })
+        // if(!states)
+        // {
+        //   initStates();
+        // }
+    })();
+
+  }, []);
+  const initStates = () =>{
+    console.log("initStates")
+  axios.get(INITURL)
         .then((response) => {
           console.log("inside states",response)
           setStates(response.data?.states); // Assuming the API response is an array of state options
@@ -99,12 +108,12 @@ const InputScreen = () => {
         .catch((error) => {
           console.error('Error fetching states:', error);
         });
-      }
-    })();
-
-  }, []);
-
+  }
   const onSubmitHandler = (values) => {
+    if (isSubmitting) {
+      console.log("onSubmitHandler isSubmitting true");
+      return; // Disable button if already submitting
+    }
     console.log("onSubmitHandler");
     if (images.length === 0) {
       alert('No images selected , Please select one or more images to upload.');
@@ -132,22 +141,37 @@ const InputScreen = () => {
       formData.append("longitude", geoResult[0].longitude);
       formData.append("postcode", geoResult[0].postcode);
     }
-    console.log('Login form values:', values,formData);
+    console.log(' form values:', values,formData);
+    setIsSubmitting(true); 
+    console.log("awat isSubmitting",isSubmitting)
     axios.post(URL, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     }).then(response => {
-      console.log("response1",response);
-      console.log("response2",response?.data?.id);
-      setTimeout(() => {
-        setResponseText(`Customer Inserted Successfully With Id : ${response?.data?.id}`); // Set the response text to be shown in the modal
+      // console.log("response1",response);
+      // console.log("response2",response?.data?.id);
+
+        setResponseText(`Item uploaded Successfully With Id : ${response?.data?.id}`); // Set the response text to be shown in the modal
         setShowModal(true); // Show the modal
-      }, 1000); // Delay of 1 second
     })
     .catch(error => {
       console.error("error",error);
-    });
+    }).finally(()=>{
+      setIsSubmitting(false);    
+      console.log("values",values)
+      values.item_name = "";
+       values.item_year = "";
+       values.item_price = "";
+      values.description = "";
+      // values.name = "";
+      // values.phone = "";
+      // values.city = "";
+      // values.address = "";
+      // values.state = "";
+      // values.district = "";
+      setImages([]); // Reset images after the submission is complete   
+    })
   };
   const closeModal = () => {
     setShowModal(false);
@@ -178,9 +202,12 @@ const InputScreen = () => {
       aspect: [4, 3],
       quality: 1,
     });
-
-    if (!result.cancelled) {
-      setImages((prevImages) => [...prevImages, result.uri]);
+  
+    if (!result.canceled) {
+      if (result.assets && result.assets.length > 0) {
+        const newImages = [...images, result.assets[0].uri];
+        setImages(newImages);
+      }
     }
   };
   const deleteImage = (index) => {
@@ -319,22 +346,22 @@ const InputScreen = () => {
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <TouchableOpacity onPress={pickImage} style={{
                               marginTop: 5,
-                              backgroundColor: "#2980b9",
+                              backgroundColor: "#3498db",
                               padding: 10,
                               borderRadius: 5,
                               flexDirection: 'row'
                             }}>
-                      <Feather name="image" size={24} color="white" />
-                      <Text style={styles.buttonText}>Pick from Gallery</Text>
+                      <Feather name="image" size={20} color="white" />
+                      <Text style={styles.buttonText}>Image from Gallery</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={takePhoto} style={{
                             marginTop: 5,
-                            backgroundColor: "#2980b9",
+                            backgroundColor: "#3498db",
                             padding: 10,
                             borderRadius: 5,
                             flexDirection: 'row'
                           }}>
-                      <Feather name="camera" size={24} color="white" />
+                      <Feather name="camera" size={20} color="white" />
                       <Text style={styles.buttonText}>Take a Photo</Text>
                     </TouchableOpacity>
                   </View>
@@ -351,7 +378,7 @@ const InputScreen = () => {
                       )}
             />
              
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={isSubmitting}>
             <Text style={styles.buttonText}>SUBMIT</Text>
           </TouchableOpacity>
           </KeyboardAwareScrollView>
