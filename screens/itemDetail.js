@@ -17,13 +17,12 @@ const MyImageComponent = ({ navigation, route }) => {
     address = receivedData.address;
   }
   function handleSubmit() {
-    
     navigation.navigate('EnquiryInput', { data: receivedData.id });
   }
 
   function handleShare() {
     Share.share({
-      message: `Have a look at this item: ${receivedData.name} http://13.232.42.12:3006/buyer/product/item?id=22`,
+      message: `Have a look at this item: ${receivedData.name} ${BASE_URL}buyer/product/item?id=${receivedData.id}`,
     });
   }
   function handleCallDealer() {
