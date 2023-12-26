@@ -143,7 +143,7 @@ const App = ({ navigation }) => {
       // setData(null);
       setListDataSource([]);
       logOut();
-      navigation.navigate('Home');
+      navigation.navigate('Buy');
     } catch (error) {
       console.error('Logout error:', error);
     }
