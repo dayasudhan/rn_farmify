@@ -119,7 +119,7 @@ const App = ({ navigation }) => {
   const getEnquiries = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(BASE_URL + 'enquiries');
+      const response = await axios.get(BASE_URL + 'dealer/enquiries');
       if (response.status === 200) {
         setListDataSource(response.data);
         console.log("response.data",response.data)
@@ -143,7 +143,7 @@ const App = ({ navigation }) => {
       // setData(null);
       setListDataSource([]);
       logOut();
-      navigation.navigate('Home');
+      navigation.navigate('Buy');
     } catch (error) {
       console.error('Logout error:', error);
     }

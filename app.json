@@ -8,8 +8,8 @@
         }
       ]
     ],
-    "name": "farmify",
-    "slug": "farmify",
+    "name": "TracTree",
+    "slug": "TracTree",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/ic_launcher.png",

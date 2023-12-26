@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Share,Linking  } from 'react-native';
 import ImageGallery from './ImageGallery';
-
+import { BASE_URL } from '../utils/utils';
 const MyImageComponent = ({ navigation, route }) => {
   const receivedData = route.params.data;
 
@@ -52,8 +52,6 @@ const MyImageComponent = ({ navigation, route }) => {
   };
   return (
     <View style={styles.container}>
-      
-     
       <View style={styles.infoContainer}>
         <Text style={styles.title}>{receivedData.name}</Text>
         <ImageGallery imageUrls={receivedData.image_urls} />

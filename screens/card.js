@@ -150,7 +150,7 @@ const CardGrid = ({ navigation }) => {
       <SafeAreaView style={styles.container}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search..."
+          placeholder="Search the item or place ..."
           value={searchText}
           onChangeText={(text) => setSearchText(text)}
         />
