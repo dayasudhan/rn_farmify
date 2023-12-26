@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Share,Linking  } from 'react-native';
 import ImageGallery from './ImageGallery';
-
+import { BASE_URL } from '../utils/utils';
 const MyImageComponent = ({ navigation, route }) => {
   const receivedData = route.params.data;
 
@@ -23,7 +23,7 @@ const MyImageComponent = ({ navigation, route }) => {
 
   function handleShare() {
     Share.share({
-      message: `Have a look at this item: ${receivedData.name} http://13.232.42.12:3006/buyer/product/item?id=22`,
+      message: `Have a look at this item: ${receivedData.name} ${BASE_URL}buyer/product/item?id=${receivedData.id}`,
     });
   }
   function handleCallDealer() {

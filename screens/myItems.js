@@ -14,14 +14,21 @@ import {
   Linking,
   Button,
   Alert,
+  Modal
 } from 'react-native';
 import axios from 'axios';
 import { BASE_URL } from '../utils/utils';
 import { useAuth } from '../AuthContext';
 
-const ExpandableComponent = ({ item, onClickFunction }) => {
+const ExpandableComponent = ({ item, onClickFunction,getMyItems }) => {
   const [layoutHeight, setLayoutHeight] = useState(0);
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const showConfirmationModal = () => {
+    setIsModalVisible(true);
+  };
+  const hideConfirmationModal = () => {
+    setIsModalVisible(false);
+  };
   useEffect(() => {
     if (item.isExpanded) {
       setLayoutHeight(null);
@@ -39,14 +46,63 @@ const ExpandableComponent = ({ item, onClickFunction }) => {
       })
       .catch((err) => console.error('An error occurred', err));
   };
+  const [idToMarkAsSold, setIdToMarkAsSold] = useState(null);
 
+// Inside the modal, you can have "Yes" and "No" buttons
+const handleConfirmation = () => {
+  hideConfirmationModal();
+  if (idToMarkAsSold) {
+    // Proceed with marking the item as sold
+    const url = BASE_URL + 'dealer/markitemsold/' + idToMarkAsSold;
+    axios
+      .patch(url)
+      .then((response) => {
+        console.log('Data saved successfully:', response.data);
+        getMyItems();
+        // Remove the marked item from the listDataSource
+       // setListDataSource((prevList) => prevList.filter((item) => item.id !== idToMarkAsSold));
+      })
+      .catch((error) => {
+        console.error('Error saving data:', error);
+      })
+      .finally(() => {
+        // Reset the idToMarkAsSold after completing the operation
+        setIdToMarkAsSold(null);
+      });
+  }
+};
+
+const handleCancellation = () => {
+  hideConfirmationModal();
+  // Reset the idToMarkAsSold if the user cancels the operation
+  setIdToMarkAsSold(null);
+};
+  const markSoldItem = (id) => {
+    showConfirmationModal();
+    setIdToMarkAsSold(id);
+    // 'data.value' contains the selected value
+    // console.log('markSoldItem:', id);
+    // const url  = BASE_URL + 'dealer/markitemsold/' + id;
+    // console.log("url",url)
+    // axios
+    // .patch(url)
+    // .then((response) => {
+    //   console.log('Data saved successfully:', response.data);
+    // })
+    // .catch((error) => {
+    //   console.error('Error saving data:', error);
+    // });
+    // //onClickFunction()
+    // getMyItems()
+
+  };
   return (
     <View style={styles.cardContainer}>
       <TouchableOpacity activeOpacity={0.8} onPress={onClickFunction} style={styles.cardHeader}>
         <View style={styles.cardHeaderContent}>
-          <Image source={{ uri: item.item.image_urls[0] }} style={styles.itemImage} />
+          <Image source={{ uri: item.image_urls[0] }} style={styles.itemImage} />
           <Text style={styles.cardHeaderText}>
-            {item.item.name}, {item.item.price}, {item.item.city}
+            {item.name}, {item.price}, {item.city}
           </Text>
         </View>
       </TouchableOpacity>
@@ -57,50 +113,54 @@ const ExpandableComponent = ({ item, onClickFunction }) => {
         </View>
           <View style={styles.tableRow}>
             <Text style={styles.label}>Description:</Text>
-            <Text style={styles.description}>{item.item.description}</Text>
+            <Text style={styles.description}>{item.description}</Text>
           </View>
           <View style={styles.tableRow}>
             <Text style={styles.label}>Manufacture Year:</Text>
-            <Text style={styles.description}>{item.item.makeYear}</Text>
+            <Text style={styles.description}>{item.makeYear}</Text>
           </View>
           <View style={styles.tableRow}>
             <Text style={styles.label}>Price/Rate:</Text>
-            <Text style={styles.description}>{item.item.price}</Text>
+            <Text style={styles.description}>{item.price}</Text>
           </View>
             <View style={styles.tableRow}>
             <Text style={styles.label}>Address:</Text>
-            <Text style={styles.description}>{item.item.address}</Text>
+            <Text style={styles.description}>{item.address}</Text>
           </View> 
           <View style={styles.tableRow}>
             <Text style={styles.label}>City/Village:</Text>
-            <Text style={styles.description}>{item.item.city}</Text>
+            <Text style={styles.description}>{item.ity}</Text>
           </View> 
          <View style={styles.tableRow}>
             <Text style={styles.label}>District:</Text>
-            <Text style={styles.description}>{item.item.district},{item.item.state}</Text>
+            <Text style={styles.description}>{item.district},{item.state}</Text>
           </View> 
-        </View>
-        <View style={styles.table}>
-          <View style={styles.tableRow}>
-            <Text style={styles.heading_label}>Buyer Details:</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.label}>Name:</Text>
-            <Text style={styles.description}>{item.name}</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.label}>Seller Address:</Text>
-            <Text style={styles.description}>{item.address}</Text>
-          </View>
         </View>
       
         <View style={styles.buttonContainer}>
-          <Button title="Call Seller" onPress={() => handleCallPress(item.item.phone)} />
-          <Button title="Call Buyer" onPress={() => handleCallPress(item.phone)} />
+          <Button title="Call Seller" onPress={() => handleCallPress(item.phone)} />
+          <Button title="Mark Sold" onPress={() => markSoldItem(item.id)} />
         </View>
         <View style={styles.separator} />
       </View>
+      <Modal
+        visible={isModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={hideConfirmationModal}
+        >
+            
+        <View style={styles.modalContainer}>
+            <Text>Are you sure you want to mark this item as sold?</Text>
+            <View style={styles.buttonContainer}>
+            <Button title="Yes" style={styles.button} onPress={handleConfirmation} />
+            <View style={{ marginHorizontal: 30 }} />
+            <Button title="No" style={styles.button} onPress={handleCancellation} />
+            </View>
+        </View>
+</Modal>
     </View>
+
   );
 };
 
@@ -116,13 +176,14 @@ const App = ({ navigation }) => {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 
-  const getEnquiries = async () => {
+  const getItems = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(BASE_URL + 'dealer/enquiries');
+      const response = await axios.get(BASE_URL + 'dealer/items');
       if (response.status === 200) {
+        
         setListDataSource(response.data);
-        console.log("response.data",response.data)
+       // console.log("response.data",response.data)
       } else {
         setListDataSource([]);
       }
@@ -132,9 +193,12 @@ const App = ({ navigation }) => {
       setIsLoading(false);
     }
   };
-
+const initItems = (item)=>{
+    console.log("initItems------------------",item.id)
+    setListDataSource((prevList) => prevList.filter((i) => i.id !== item.id));
+}
   useEffect(() => {
-    getEnquiries();
+    getItems();
   }, [loggedIn]);
 
   const handleLogoutSubmit = async () => {
@@ -167,7 +231,7 @@ const App = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.titleText}>Enquiry List</Text>
+        <Text style={styles.titleText}>Item List</Text>
         <TouchableOpacity onPress={() => handleLogoutSubmit()}>
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
@@ -182,6 +246,7 @@ const App = ({ navigation }) => {
               onClickFunction={() => {
                 updateLayout(key);
               }}
+              getMyItems = {()=>{initItems(item)}}
               item={item}
             />
           ))}
@@ -265,6 +330,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
   },
+  button: {
+    padding: 20,
+  },
   noEnquiriesText: {
     textAlign: 'center',
     fontSize: 16,
@@ -296,5 +364,27 @@ const styles = StyleSheet.create({
     marginTop: 5,
     // flex: 1, 
     // flexWrap: 'wrap'
+  },
+  modalContainer: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    width: '80%',
+    maxWidth: 400,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
   },
 });

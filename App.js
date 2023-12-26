@@ -7,6 +7,7 @@ import card from './screens/card.js'
 
 import{AuthProvider } from './AuthContext';
 import seller from './screens/InputScreen.js'
+import myItems from './screens/myItems.js'
 import enquiries from './screens/Enquiries.js'
 import itemDetail from './screens/itemDetail.js'
 import EnquiryInput from './screens/EnquiryInput.js'
@@ -18,10 +19,10 @@ const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
-function MyTabs() {
+function HomeTabs() {
   return (
     <Tab.Navigator
-      initialRouteName="Feed"
+      initialRouteName="TracTree"
       activeColor="#e91e63"
       labelStyle={{ fontSize: 12 }}
       style={{ backgroundColor: 'tomato' }}
@@ -50,12 +51,52 @@ function MyTabs() {
     </Tab.Navigator>
   );
 }
+
+function DealerTabs() {
+  return (
+    <Tab.Navigator
+      initialRouteName="TracTree"
+      activeColor="#e91e63"
+      labelStyle={{ fontSize: 12 }}
+      style={{ backgroundColor: 'tomato' }}
+      barStyle={{ backgroundColor: 'white' ,height: 70  }}
+    >
+      <Tab.Screen
+        name="Enquiries"
+        component={enquiries}
+        options={{
+          tabBarLabel: 'Enquiries',
+          tabBarIcon: ({ color }) => (
+            <Entypo name="shop" color={color} size={26} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="My Items"
+        component={myItems}
+        options={{
+          tabBarLabel: 'My Items',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="tractor-variant" color={color} size={26} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
 const MainStackNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={MyTabs} />
+      <Stack.Screen name="Home" component={HomeTabs} />
       <Stack.Screen name="ItemDetail" component={itemDetail} /> 
       <Stack.Screen name="EnquiryInput" component={EnquiryInput} /> 
+    </Stack.Navigator>
+  );
+}
+const DealerStackNavigator = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Home" component={DealerTabs} />
     </Stack.Navigator>
   );
 }
@@ -67,7 +108,7 @@ const DrawerNavigator = () => {
         name="Buy"
         component={MainStackNavigator}
         options={{
-          title: 'Farmify',
+          title: 'TracTree',
           drawerIcon: ({ focused, size }) => (
             <MaterialCommunityIcons
               name={focused ? 'home' : 'home-outline'}
@@ -79,7 +120,7 @@ const DrawerNavigator = () => {
       />
       <Drawer.Screen
         name="Enquiries"
-        component={enquiries}
+        component={DealerStackNavigator}
         options={{
           title: 'Enquiries',
           drawerIcon: ({ focused, size }) => (
