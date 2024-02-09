@@ -5,8 +5,9 @@ const ShareComponent = () => {
   const onShare = async () => {
     try {
       const result = await Share.share({
-        message: 'Hi, please use this app',
-        url: 'https://play.google.com/store/games?device=phone',
+        title: 'TracTree App Link',
+        message: 'Please install TracTree app :https://play.google.com/store/apps/details?id=com.kuruvatech.farmify', 
+        url: 'https://play.google.com/store/apps/details?id=com.kuruvatech.farmify'
       });
 
       if (result.action === Share.sharedAction) {
