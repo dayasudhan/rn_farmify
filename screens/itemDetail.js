@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Share,Linking  } from 'react-native';
 import ImageGallery from './ImageGallery';
 import { BASE_URL } from '../utils/utils';
+import { Feather } from '@expo/vector-icons';
 const MyImageComponent = ({ navigation, route }) => {
   const receivedData = route.params.data;
 
@@ -36,7 +37,7 @@ const MyImageComponent = ({ navigation, route }) => {
     const phoneNumber = '9148843555';
   
     // Replace 'Hello, WhatsApp!' with the message you want to send
-    const  message= `Have a look at this item: ${receivedData.name} http://13.232.42.12:3006/buyer/product/item?id=22`;
+    const  message= `Have a look at this item: ${receivedData.name} ${BASE_URL}/buyer/product/item?id=22`;
   
     // Create a WhatsApp URL with the phone number and message
     const url = `whatsapp://send?phone=${phoneNumber}&text=${message}`;
@@ -78,6 +79,10 @@ const MyImageComponent = ({ navigation, route }) => {
             <Text style={styles.description}>{receivedData.city}</Text>
           </View> */}
           <View style={styles.tableRow}>
+            <Text style={styles.label}>Posted On:</Text>
+            <Text style={styles.description}>{new Date(receivedData?.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}</Text>
+          </View> 
+          <View style={styles.tableRow}>
             <Text style={styles.label}>Seller District:</Text>
             <Text style={styles.description}>{receivedData.district},{receivedData.state}</Text>
           </View>
@@ -94,12 +99,15 @@ const MyImageComponent = ({ navigation, route }) => {
             <Text style={styles.buttonText}>Enquiry</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={handleShare}>
+          {/* <TouchableOpacity style={styles.button} onPress={handleShare}>
             <Text style={styles.buttonText}>Share</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity style={styles.callButton} onPress={handleCallDealer}>
-            <Text style={styles.buttonText}>Call Dealer</Text>
+          <View style={styles.buttonContainer}>
+            <Feather name="phone"  color="white" /> 
+            <Text style={styles.buttonText}>  Dealer</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -111,13 +119,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    // justifyContent: 'center',
   },
   image: {
     width: 200,
     height: 200,
-    resizeMode: 'cover', // You can adjust this as needed
-    borderRadius: 10, // Add border radius for rounded corners
+    resizeMode: 'cover',
+    borderRadius: 10,
   },
   infoContainer: {
     marginTop: 10,
@@ -154,6 +161,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#2980b9", // Green color for call button
     padding: 10,
     borderRadius: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'row', // Align icon and text horizontally
+    alignItems: 'center', // Align items vertically in the center
   },
   table: {
     // width: '100%',
