@@ -140,7 +140,8 @@ const CardGrid = ({ navigation }) => {
       item?.['name']?.toLowerCase().includes(searchText.toLowerCase()) ||
       item?.['description']?.toLowerCase().includes(searchText.toLowerCase()) ||
       item?.['address']?.toLowerCase().includes(searchText.toLowerCase()) ||
-      item?.['city']?.toLowerCase().includes(searchText.toLowerCase())
+      item?.['city']?.toLowerCase().includes(searchText.toLowerCase())||
+      item?.['district']?.toLowerCase().includes(searchText.toLowerCase())
     );
   });
 

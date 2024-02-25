@@ -8,7 +8,7 @@ export const validationSchema = Yup.object().shape({
     "Invalid phone number, must be 10 digits"
   ),
    address: Yup.string().required("Please Enter Address"),
-    city: Yup.string().required("Please Enter City or Village"),
+   city: Yup.string().required("Please Enter City or Village"),
    item_price: Yup.mixed().test('is-number', 'Invalid Item Rate. Must be a number', (value) => {
     return !isNaN(value);
   }).required("Please Enter Item Rate"),
