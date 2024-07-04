@@ -194,7 +194,7 @@ const InputScreen = () => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.5,
+      quality: 1,
     });
   
     if (!result.canceled) {
@@ -216,17 +216,17 @@ const InputScreen = () => {
    
       <Formik
         initialValues={{
-          name: "",
-          phone: "",
+          name: "a",
+          phone: "9566229075",
           address: geoResult?geoResult[0].address:"",
           email: "",
-          landMark:"",
+          landMark:"asd",
           city:geoResult?geoResult[0].city:"",
-          item_name:"",
-          item_year:"",
-          item_price:"",
-          item_place:"",
-          description:"",
+          item_name:"asd",
+          item_year:"2023",
+          item_price:"2",
+          item_place:"21",
+          description:"123df",
           image:"",
           state:geoResult?geoResult[0].state:"",
           district:geoResult?geoResult[0].district:"",
