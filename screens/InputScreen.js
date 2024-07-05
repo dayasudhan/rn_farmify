@@ -149,7 +149,6 @@ const InputScreen = () => {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      timeout: 60000 // 10 seconds timeout
     }).then(response => {
       // console.log("response1",response);
       // console.log("response2",response?.data?.id);
@@ -182,25 +181,53 @@ const InputScreen = () => {
   const openModal = () => {
     setShowModal(true);
   };
-  const compressImage = async (uri) => {
-    let compressUri = uri;
-    let fileSize = await getFileSize(uri);
-    const v= fileSize / (1024 *1024);
-    const compressRatio = 1 / v;
-    console.log("compressImage-1-",fileSize,v,compressRatio)
-    while (fileSize > 1 * 1024 * 1024) { // 1MB
-      const manipResult = await ImageManipulator.manipulateAsync(
-        compressUri,
-        [],
-        { compress: compressRatio, format: ImageManipulator.SaveFormat.JPEG }
-      );
-      compressUri = manipResult.uri;
-      fileSize = await getFileSize(compressUri);
-      console.log("compressImage-2-",fileSize)
-    }
-    return compressUri;
-  };
+  // const compressImage = async (uri) => {
+  //   let compressUri = uri;
+  //   let fileSize = await getFileSize(uri);
+  //   const v= fileSize / (1024 *1024);
+  //   const compressRatio = 1 / v;
+  //   console.log("compressImage-1-",fileSize,v,compressRatio)
+  //   while (fileSize > 1 * 1024 * 1024) { // 1MB
+  //     const manipResult = await ImageManipulator.manipulateAsync(
+  //       compressUri,
+  //       [],
+  //       { compress: compressRatio, format: ImageManipulator.SaveFormat.JPEG }
+  //     );
+  //     compressUri = manipResult.uri;
+  //     fileSize = await getFileSize(compressUri);
+  //     console.log("compressImage-2-",fileSize)
+  //   }
+  //   return compressUri;
+  // };
+  const MAX_IMAGE_SIZE = 200 * 1024; // 200 KB in bytes
+const INITIAL_COMPRESSION_QUALITY = 0.7; // Initial compression quality
+const MIN_COMPRESSION_QUALITY = 0.1; // Minimum compression quality to avoid overly degrading the image
 
+const compressImage = async (uri) => {
+  let fileSize = 0;
+  let compressedImage = null;
+  let compressionQuality = INITIAL_COMPRESSION_QUALITY;
+
+  do {
+    compressedImage = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 1024 } }], // adjust width as necessary
+      { compress: compressionQuality, format: ImageManipulator.SaveFormat.JPEG }
+    );
+
+    // Get the size of the compressed image
+    const compressedFile = await fetch(compressedImage.uri);
+    fileSize = (await compressedFile.blob()).size;
+
+    // Reduce compression quality if file size is too large
+    if (fileSize > MAX_IMAGE_SIZE && compressionQuality > MIN_COMPRESSION_QUALITY) {
+      compressionQuality -= 0.1;
+    }
+    console.log("compressImage-1-",fileSize,compressionQuality)
+  } while (fileSize > MAX_IMAGE_SIZE && compressionQuality > MIN_COMPRESSION_QUALITY);
+
+  return compressedImage.uri;
+};
   const getFileSize = async (uri) => {
     const fileInfo = await FileSystem.getInfoAsync(uri);
     return fileInfo.size;
@@ -210,7 +237,7 @@ const InputScreen = () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [4, 3],
+      //aspect: [4, 3],
       quality: 1,
     });
 
@@ -224,7 +251,7 @@ const InputScreen = () => {
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
+      //aspect: [4, 3],
       quality: 1,
     });
 
