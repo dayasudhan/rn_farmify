@@ -8,6 +8,8 @@ import { styles } from "./../utils/styles";
 import axios from 'axios';
 import {BASE_URL} from './../utils/utils' 
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../AuthContext';
 
@@ -174,21 +176,44 @@ const InputScreen = () => {
   const openModal = () => {
     setShowModal(true);
   };
+  const compressImage = async (uri) => {
+    let compressUri = uri;
+    let fileSize = await getFileSize(uri);
+    const v= fileSize / (1024 *1024);
+    const compressRatio = 1 / v;
+    console.log("compressImage-1-",fileSize,v,compressRatio)
+    while (fileSize > 1 * 1024 * 1024) { // 1MB
+      const manipResult = await ImageManipulator.manipulateAsync(
+        compressUri,
+        [],
+        { compress: compressRatio, format: ImageManipulator.SaveFormat.JPEG }
+      );
+      compressUri = manipResult.uri;
+      fileSize = await getFileSize(compressUri);
+      console.log("compressImage-2-",fileSize)
+    }
+    return compressUri;
+  };
+
+  const getFileSize = async (uri) => {
+    const fileInfo = await FileSystem.getInfoAsync(uri);
+    return fileInfo.size;
+  };
+
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1
+      quality: 1,
     });
 
-    console.log("result",result);
-
     if (!result.canceled) {
-      setImages((prevImages) => [...prevImages, result.assets[0].uri]);
+      const compressedUri = await compressImage(result.assets[0].uri);
+      setImages((prevImages) => [...prevImages, compressedUri ]);
     }
   };
+
   const takePhoto = async () => {
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -196,12 +221,10 @@ const InputScreen = () => {
       aspect: [4, 3],
       quality: 1,
     });
-  
+
     if (!result.canceled) {
-      if (result.assets && result.assets.length > 0) {
-        const newImages = [...images, result.assets[0].uri];
-        setImages(newImages);
-      }
+      const compressedUri = await compressImage(result.assets[0].uri);
+      setImages((prevImages) => [...prevImages,  compressedUri ]);
     }
   };
   const deleteImage = (index) => {
