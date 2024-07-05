@@ -42,13 +42,13 @@ const ImageGalleryWithIcons = ({ imageUrls }) => {
             style={styles.icon}
             onPress={handlePrevClick}
             disabled={currentIndex === 0}>
-            <Ionicons name="ios-arrow-back" size={24} color="white" />
+            <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.icon}
             onPress={handleNextClick}
             disabled={currentIndex === imageUrls.length - 1}>
-            <Ionicons name="ios-arrow-forward" size={24} color="white" />
+            <Ionicons name="arrow-forward" size={24} color="white" />
           </TouchableOpacity>
         </View>
       </View>
