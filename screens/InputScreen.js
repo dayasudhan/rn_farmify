@@ -149,6 +149,7 @@ const InputScreen = () => {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 60000 // 10 seconds timeout
     }).then(response => {
       // console.log("response1",response);
       // console.log("response2",response?.data?.id);
@@ -157,7 +158,12 @@ const InputScreen = () => {
         setShowModal(true); // Show the modal
     })
     .catch(error => {
-      console.error("error",error);
+      console.error("error",error,error.response);
+      if (error.response && error.response.status === 413) {
+        alert('Upload failed. Images are too large or use lesser images');
+      } else {
+        alert('Upload failed. Please try again.');
+      }
     }).finally(()=>{
       setIsSubmitting(false);    
       console.log("values",values)
